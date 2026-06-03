@@ -2,13 +2,38 @@ import React, { useRef } from 'react'
 import { useStore } from '../state/store.jsx'
 import { PageHead, Card, Field, Pill } from '../components/ui.jsx'
 import { exportState, importState } from '../lib/storage.js'
+import { getSystem, TRACK_LABELS } from '../lib/systems.js'
 
 export default function Settings() {
-  const { state, setApiKey, replaceState, reset } = useStore()
+  const { state, setApiKey, replaceState, reset, reconfigure } = useStore()
   const fileRef = useRef()
+  const system = getSystem(state.system)
+  const tracked = state.tracking ? Object.keys(TRACK_LABELS).filter(k => state.tracking[k]) : []
   return (
     <>
       <PageHead eyebrow="System" title="Settings" sub="Your data lives in this browser. Back it up with export; move devices with import." />
+      <h2 className="section">Your system</h2>
+      <Card>
+        {system ? (
+          <>
+            <div className="row-between" style={{ alignItems: 'flex-start' }}>
+              <div>
+                <div className="stat-value accent" style={{ fontSize: 24 }}>{system.label}</div>
+                <div className="muted" style={{ marginTop: 4 }}>{system.tagline}</div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
+                  {tracked.map(k => <Pill key={k} tone="good">{TRACK_LABELS[k]}</Pill>)}
+                </div>
+              </div>
+              <button className="btn" onClick={() => { if (confirm('Re-run the configurator? Your logged data is kept — only your system and targets are reset.')) reconfigure() }}>↺ Reconfigure</button>
+            </div>
+          </>
+        ) : (
+          <div className="row-between">
+            <span className="muted">No system assigned yet.</span>
+            <button className="btn" onClick={reconfigure}>Run the configurator</button>
+          </div>
+        )}
+      </Card>
       <h2 className="section">AI coach connection</h2>
       <Card>
         <Field label="Anthropic API key (optional)" hint="Only needed for the live preview before you deploy. Once deployed to Cloudflare Pages with a server-side key, you can leave this blank. Stored locally in this browser only.">

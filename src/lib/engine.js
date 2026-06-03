@@ -304,14 +304,17 @@ function round(x, dp = 0) { const f = 10 ** dp; return Math.round(x * f) / f }
 // ============================================================
 // 4) AI CONTEXT  (port of WORKER master-prompt builder C206-C232)
 // ============================================================
-export function buildCoachContext(inputs, plan, planRes, daily, strength) {
+export function buildCoachContext(inputs, plan, planRes, daily, strength, system = null) {
   const f = (x, dp = 1) => (x == null || Number.isNaN(x) ? '-' : (x >= 0 ? '+' : '') + Number(x).toFixed(dp))
   const planLines = plan.filter(d => d.name).map(d =>
     `${d.name}: ` + d.exercises.filter(e => e.name).map(e => `${e.name} (${e.sets || 0} sets${e.goalWeight ? `, target ${e.goalWeight}kg x${e.goalReps}` : ''})`).join('; ')
   ).join('\n')
   const w = daily.whole
-  return `You are the AI coach inside The Shredsheet (the 3-person team: the app is the analyst, you are the coach, the user is the athlete). Be encouraging, clear, didactic, never cringe. British English.
-
+  const systemLine = system
+    ? `\nSYSTEM\nThe athlete was profiled by the configurator and is on the ${system.coachDescriptor} Tracking: ${system.tracking || ''}. ${system.muscleEstimation === false ? 'They are NOT tracking enough (no calorie + weight logging) for a reliable muscle estimate — coach on training and habits, and gently encourage fuller tracking rather than quoting muscle figures as fact.' : 'Full data tracking is on, so muscle/fat estimates are meaningful.'}\n`
+    : ''
+  return `You are Coach inside The Shredsheet (the 3-person team: the app is the analyst, you are the coach, the user is the athlete). Be encouraging, clear, didactic, never cringe. British English.
+${systemLine}
 USER & GOAL
 Age ${inputs.age}, ${inputs.sex}, ${inputs.heightCm}cm, start ${inputs.startWeightKg}kg -> goal ${inputs.goalWeightKg}kg over ${inputs.periodDays} days. Primary goal: ${inputs.goal}. Experience: ${inputs.experience}. Gym ${inputs.gymSessionsPerWeek}x/wk, ${inputs.stepGoal} steps/day, ${inputs.cardioMinsPerWeek} cardio mins/wk. Manual modifiers: metabolism ${Math.round(inputs.metabolismModifier*100)}%, muscle ${Math.round(inputs.muscleModifier*100)}%.
 

@@ -13,6 +13,8 @@ const seed = () => ({
   workoutLog: [],        // [{date, day, exercise, weight, reps, rir, tempo, comments}]
   apiKey: '',
   onboarded: false,
+  system: null,          // id of the configurator-assigned system (see lib/systems.js)
+  tracking: null,        // { workouts, weight, calories, protein, steps, cardio, muscleEstimation }
 })
 
 export function StoreProvider({ children }) {
@@ -28,6 +30,14 @@ export function StoreProvider({ children }) {
     setWorkoutLog: (workoutLog) => setState(s => ({ ...s, workoutLog })),
     setApiKey: (apiKey) => setState(s => ({ ...s, apiKey })),
     setOnboarded: (v) => setState(s => ({ ...s, onboarded: v })),
+    setTracking: (patch) => setState(s => ({ ...s, tracking: { ...(s.tracking || {}), ...patch } })),
+    // The configurator's payload lands here: seed the inputs, record the
+    // assigned system + tracking map, and mark onboarding done in one update.
+    completeOnboarding: ({ systemId, inputsPatch, tracking }) => setState(s => ({
+      ...s, inputs: { ...s.inputs, ...inputsPatch }, system: systemId, tracking, onboarded: true,
+    })),
+    // Re-run the wizard without wiping logged data.
+    reconfigure: () => setState(s => ({ ...s, onboarded: false })),
     replaceState: (next) => setState({ ...seed(), ...next }),
     reset: () => setState(seed()),
   }), [])

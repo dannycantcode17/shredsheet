@@ -3,10 +3,21 @@ import { useStore } from '../state/store.jsx'
 import { PageHead, Card, Pill } from '../components/ui.jsx'
 import { buildCoachContext } from '../lib/engine.js'
 import { askCoach } from '../lib/ai.js'
+import { getSystem, TRACK_LABELS } from '../lib/systems.js'
 
 export default function AICoach() {
   const { state, planRes, daily, strength } = useStore()
-  const context = useMemo(() => buildCoachContext(state.inputs, state.plan, planRes, daily, strength), [state, planRes, daily, strength])
+  const context = useMemo(() => {
+    const sys = getSystem(state.system)
+    const systemForCoach = sys ? {
+      coachDescriptor: sys.coachDescriptor,
+      tracking: state.tracking
+        ? Object.keys(TRACK_LABELS).filter(k => state.tracking[k]).map(k => TRACK_LABELS[k]).join(', ') || 'minimal'
+        : 'all',
+      muscleEstimation: state.tracking ? state.tracking.muscleEstimation : true,
+    } : null
+    return buildCoachContext(state.inputs, state.plan, planRes, daily, strength, systemForCoach)
+  }, [state, planRes, daily, strength])
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)

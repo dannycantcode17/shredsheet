@@ -1,5 +1,6 @@
 import React from 'react'
 import { useStore } from './state/store.jsx'
+import Configurator from './modules/Configurator.jsx'
 import Inputs from './modules/Inputs.jsx'
 import GymPlan from './modules/GymPlan.jsx'
 import DailyLog from './modules/DailyLog.jsx'
@@ -26,7 +27,9 @@ const NAV = [
 ]
 
 export default function App() {
-  const { view, setView } = useStore()
+  const { state, view, setView } = useStore()
+  // First run (or a deliberate reconfigure) drops the athlete into the wizard.
+  if (!state.onboarded) return <Configurator />
   const v = view === 'dashboard' ? 'bodycomp' : view
   return (
     <div className="app-root">
