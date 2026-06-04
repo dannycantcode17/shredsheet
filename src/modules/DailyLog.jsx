@@ -21,8 +21,8 @@ export default function DailyLog() {
   const showDeficit = tracking.calories
   const showMuscle = tracking.muscleEstimation
 
-  const Cell = ({ d, k, w = 70 }) => (
-    <td><input style={{ width: w }} type="number" value={state.dailyLog[d]?.[k] ?? ''} onChange={e => setDailyLog(d, { [k]: e.target.value })} /></td>
+  const Cell = ({ d, k, w = 70, label }) => (
+    <td data-label={label}><input style={{ width: w }} type="number" value={state.dailyLog[d]?.[k] ?? ''} onChange={e => setDailyLog(d, { [k]: e.target.value })} /></td>
   )
   return (
     <>
@@ -38,7 +38,7 @@ export default function DailyLog() {
       )}
       <Card>
         <div style={{ overflowX: 'auto' }}>
-          <table className="tbl">
+          <table className="tbl resp">
             <thead><tr>
               <th>Day</th><th>Date</th>
               {cols.map(c => <th key={c.k}>{c.label}</th>)}
@@ -51,12 +51,12 @@ export default function DailyLog() {
                 const d = idx + 1, c = byDay[d] || {}
                 return (
                   <tr key={d}>
-                    <td className="faint">{d}</td>
-                    <td className="faint" style={{ whiteSpace: 'nowrap' }}>{c.iso ? c.iso.slice(5) : ''}</td>
-                    {cols.map(col => <Cell key={col.k} d={d} k={col.k} w={col.w} />)}
-                    {showDeficit && <td className={c.deficit < 0 ? 'pos' : c.deficit > 0 ? 'neg' : 'faint'}>{c.deficit != null ? fmt(c.deficit, 0, true) : ''}</td>}
-                    {showMuscle && <td className="faint">{c.logged ? fmt(c.cumFat, 2, true) : ''}</td>}
-                    {showMuscle && <td className="faint">{c.logged ? fmt(c.cumMuscle, 2, true) : ''}</td>}
+                    <td data-label="Day" className="faint">{d}</td>
+                    <td data-label="Date" className="faint" style={{ whiteSpace: 'nowrap' }}>{c.iso ? c.iso.slice(5) : ''}</td>
+                    {cols.map(col => <Cell key={col.k} d={d} k={col.k} w={col.w} label={col.label} />)}
+                    {showDeficit && <td data-label="Deficit/surplus" className={c.deficit < 0 ? 'pos' : c.deficit > 0 ? 'neg' : 'faint'}>{c.deficit != null ? fmt(c.deficit, 0, true) : ''}</td>}
+                    {showMuscle && <td data-label="Cum. fat" className="faint">{c.logged ? fmt(c.cumFat, 2, true) : ''}</td>}
+                    {showMuscle && <td data-label="Cum. muscle" className="faint">{c.logged ? fmt(c.cumMuscle, 2, true) : ''}</td>}
                   </tr>
                 )
               })}

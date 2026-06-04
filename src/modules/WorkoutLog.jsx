@@ -16,22 +16,22 @@ export default function WorkoutLog() {
       <PageHead eyebrow="Log · 4" title="Workout Log" sub="One row per set. The detail powers volume, calorie burn, muscle and strength tracking." />
       <Card>
         <div style={{ overflowX: 'auto' }}>
-          <table className="tbl">
+          <table className="tbl resp">
             <thead><tr>
               <th>Date</th><th>Split day</th><th>Exercise</th><th style={{ width: 80 }}>Weight</th><th style={{ width: 64 }}>Reps</th><th style={{ width: 60 }}>RIR</th><th style={{ width: 70 }}>Tempo</th><th style={{ width: 70 }}>est. 1RM</th><th></th>
             </tr></thead>
             <tbody>
               {log.map((r, i) => (
                 <tr key={i}>
-                  <td><input type="date" style={{ width: 140 }} value={r.date} onChange={e => update(i, { date: e.target.value })} /></td>
-                  <td><select value={r.day} onChange={e => update(i, { day: e.target.value })}><option value="">—</option>{dayNames.map(d => <option key={d}>{d}</option>)}</select></td>
-                  <td><select value={r.exercise} onChange={e => update(i, { exercise: e.target.value })}><option value="">—</option>{exercises.map(x => <option key={x}>{x}</option>)}</select></td>
-                  <td><input type="number" value={r.weight} onChange={e => update(i, { weight: e.target.value })} /></td>
-                  <td><input type="number" value={r.reps} onChange={e => update(i, { reps: e.target.value })} /></td>
-                  <td><input type="number" value={r.rir} onChange={e => update(i, { rir: e.target.value })} /></td>
-                  <td><input type="number" value={r.tempo} onChange={e => update(i, { tempo: e.target.value })} /></td>
-                  <td className="accent">{r.weight && r.reps ? epley1RM(r.weight, r.reps, r.rir).toFixed(1) : ''}</td>
-                  <td><button className="btn ghost" style={{ padding: '4px 8px' }} onClick={() => del(i)}>✕</button></td>
+                  <td data-label="Date"><input type="date" style={{ width: 140 }} value={r.date} onChange={e => update(i, { date: e.target.value })} /></td>
+                  <td data-label="Split day"><select value={r.day} onChange={e => update(i, { day: e.target.value })}><option value="">—</option>{dayNames.map(d => <option key={d}>{d}</option>)}</select></td>
+                  <td data-label="Exercise"><select value={r.exercise} onChange={e => update(i, { exercise: e.target.value })}><option value="">—</option>{exercises.map(x => <option key={x}>{x}</option>)}</select></td>
+                  <td data-label="Weight"><input type="number" value={r.weight} onChange={e => update(i, { weight: e.target.value })} /></td>
+                  <td data-label="Reps"><input type="number" value={r.reps} onChange={e => update(i, { reps: e.target.value })} /></td>
+                  <td data-label="RIR"><input type="number" value={r.rir} onChange={e => update(i, { rir: e.target.value })} /></td>
+                  <td data-label="Tempo"><input type="number" value={r.tempo} onChange={e => update(i, { tempo: e.target.value })} /></td>
+                  <td data-label="est. 1RM" className="accent">{r.weight && r.reps ? epley1RM(r.weight, r.reps, r.rir).toFixed(1) : ''}</td>
+                  <td data-label=""><button className="btn ghost" style={{ padding: '4px 8px' }} onClick={() => del(i)}>✕</button></td>
                 </tr>
               ))}
               {!log.length && <tr><td colSpan={9} className="faint" style={{ padding: 18 }}>No sets logged yet.</td></tr>}
