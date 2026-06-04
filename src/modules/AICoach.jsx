@@ -2,11 +2,12 @@ import React, { useMemo, useState, useRef, useEffect } from 'react'
 import { useStore } from '../state/store.jsx'
 import { PageHead, Card, Pill } from '../components/ui.jsx'
 import { buildCoachContext } from '../lib/engine.js'
+import { deriveInsights } from '../lib/insights.js'
 import { askCoach } from '../lib/ai.js'
 import { getSystem, TRACK_LABELS } from '../lib/systems.js'
 
 export default function AICoach() {
-  const { state, planRes, daily, strength, setCoachLog } = useStore()
+  const { state, planRes, daily, strength, caloriesTracked, muscleEstimated, setCoachLog } = useStore()
   const context = useMemo(() => {
     const sys = getSystem(state.system)
     const systemForCoach = sys ? {
@@ -16,8 +17,11 @@ export default function AICoach() {
         : 'all',
       muscleEstimation: state.tracking ? state.tracking.muscleEstimation : true,
     } : null
-    return buildCoachContext(state.inputs, state.plan, planRes, daily, strength, systemForCoach)
-  }, [state, planRes, daily, strength])
+    // Hand the coach the same read the dashboard shows, so the team is coherent.
+    const proteinTracked = state.tracking ? !!state.tracking.protein : true
+    const insights = deriveInsights({ planRes, daily, flags: { calories: caloriesTracked, protein: proteinTracked, muscle: muscleEstimated } })
+    return buildCoachContext(state.inputs, state.plan, planRes, daily, strength, systemForCoach, insights)
+  }, [state, planRes, daily, strength, caloriesTracked, muscleEstimated])
   // The conversation lives in the store, so it survives reloads and tab switches.
   const messages = state.coachLog || []
   const [input, setInput] = useState('')

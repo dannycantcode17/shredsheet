@@ -319,7 +319,7 @@ function round(x, dp = 0) { const f = 10 ** dp; return Math.round(x * f) / f }
 // ============================================================
 // 4) AI CONTEXT  (port of WORKER master-prompt builder C206-C232)
 // ============================================================
-export function buildCoachContext(inputs, plan, planRes, daily, strength, system = null) {
+export function buildCoachContext(inputs, plan, planRes, daily, strength, system = null, insights = []) {
   const f = (x, dp = 1) => (x == null || Number.isNaN(x) ? '-' : (x >= 0 ? '+' : '') + Number(x).toFixed(dp))
   const planLines = plan.filter(d => d.name).map(d =>
     `${d.name}: ` + d.exercises.filter(e => e.name).map(e => `${e.name} (${e.sets || 0} sets${e.goalWeight ? `, target ${e.goalWeight}kg x${e.goalReps}` : ''})`).join('; ')
@@ -348,5 +348,5 @@ Cumulative so far: muscle ${f(daily.cumMuscle,2)}kg, fat ${f(daily.cumFat,2)}kg,
 
 STRENGTH (top lifts)
 ${strength.key6.map(e => `${e.name}: 1RM ${e.first}->${e.max}kg${e.target?` (target ${e.target}, ${e.hitTarget?'HIT':'not yet'})`:''}`).join('\n') || '(no workouts logged)'}
-`
+${insights.length ? `\nANALYST'S READ (what the app is already showing the athlete on their dashboard — stay consistent with this; don't contradict it)\n${insights.map(i => `- [${i.tone}] ${i.title}: ${i.text}`).join('\n')}\n` : ''}`
 }
