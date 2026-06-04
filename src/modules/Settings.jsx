@@ -89,7 +89,14 @@ export default function Settings() {
           <button className="btn" onClick={() => fileRef.current.click()}>⬆ Import backup</button>
           <button className="btn ghost" onClick={() => { if (confirm('Reset everything to defaults? Export first if unsure.')) reset() }}>Reset to defaults</button>
           <input ref={fileRef} type="file" accept="application/json" style={{ display: 'none' }}
-            onChange={async e => { const f = e.target.files[0]; if (f) { try { replaceState(await importState(f)); alert('Imported.') } catch { alert('Could not read that file.') } } }} />
+            onChange={async e => {
+              const f = e.target.files[0]
+              if (f) {
+                try { alert(replaceState(await importState(f)) ? 'Imported.' : 'That file isn’t a Shredsheet backup — nothing was changed.') }
+                catch { alert('Could not read that file.') }
+              }
+              e.target.value = '' // allow re-importing the same file
+            }} />
         </div>
       </Card>
     </>

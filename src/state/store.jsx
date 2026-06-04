@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { DEFAULT_INPUTS, DEFAULT_PLAN } from '../lib/defaults.js'
-import { loadState, saveState } from '../lib/storage.js'
+import { loadState, saveState, normalizeState } from '../lib/storage.js'
 import { computePlan, computeStrength, computeDaily } from '../lib/engine.js'
 
 const StoreCtx = createContext(null)
@@ -46,7 +46,14 @@ export function StoreProvider({ children }) {
     })),
     // Re-run the wizard without wiping logged data.
     reconfigure: () => setState(s => ({ ...s, onboarded: false })),
-    replaceState: (next) => setState({ ...seed(), ...migrate(next) }),
+    // Refuse a file that isn't a usable Shredsheet state rather than wipe good
+    // data; malformed sub-fields are dropped and fall back to seed defaults.
+    replaceState: (next) => {
+      const norm = normalizeState(next)
+      if (!norm) return false
+      setState({ ...seed(), ...migrate(norm) })
+      return true
+    },
     reset: () => setState(seed()),
   }), [])
 
