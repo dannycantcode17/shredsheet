@@ -34,6 +34,11 @@ deviation from the spreadsheet is listed here so nothing is silent.
   list: it names the single cheapest win, celebrates clean/over-performance, and
   never shames, nags or bosses (watch-items inform, they don't block). Pure and
   unit-checked across scenarios; nothing here touches the engine maths.
+  - *Recalibration nudge (value 4, "the model bends to the user"):* when the
+    scale disagrees with what logged intake predicts (≥14 days, real gap), it
+    invites the athlete to nudge their metabolism modifier — **direction only**,
+    no faked target number, fully reversible, user-applied. The original sheet's
+    celebrated recalibration mechanic, kept honest.
 - **Projection confidence bands.** Muscle and fat projections now carry an
   uncertainty band instead of a single fake-precise number (value 4: show
   uncertainty, never fake precision). `projectionRel(daysLogged)` /

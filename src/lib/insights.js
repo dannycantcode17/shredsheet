@@ -55,6 +55,20 @@ export function deriveInsights({ planRes, daily, flags = {} }) {
       text: `Your recomposition's tracking clean (${pctClean(clean)} of the change is the right kind). Whatever you're doing is working — stay the course.` })
   }
 
+  // The model bends to the user (value 4). When the scale disagrees with what
+  // the logged intake predicts, invite recalibration — direction only, no faked
+  // target number, fully reversible. Needs calorie + weight data and a real gap.
+  if (flags.muscle && logged >= 14 && w.avgCalories > 0) {
+    const predWeight = (w.avgDeficit * logged) / 7700 + daily.cumMuscle // expected kg change
+    const gap = daily.cumWeight - predWeight
+    const rel = Math.abs(predWeight) > 0.5 ? Math.abs(gap) / Math.abs(predWeight) : (Math.abs(gap) > 0 ? 1 : 0)
+    if (Math.abs(gap) >= 1.2 && rel >= 0.3) {
+      const faster = gap < 0 // actual weight below the prediction = moving faster than intake implies
+      candidates.push({ priority: 2, tone: 'note', title: 'Your scale and the model disagree',
+        text: `Your weight's moving ${faster ? 'faster' : 'slower'} than your logged intake predicts (about ${Math.abs(gap).toFixed(1)}kg ${faster ? 'further than' : 'short of'} the model). Bodies vary and you know yours best — if this holds, nudging your metabolism modifier ${faster ? 'up' : 'down'} a few % in Inputs will line the model up with your reality.` })
+    }
+  }
+
   // Training volume vs the plan — respect effort; consistency beats heroics.
   if (planRes.plannedSets > 0 && logged >= 7) {
     const ratio = w.setsPerWeek / planRes.plannedSets
