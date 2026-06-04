@@ -67,21 +67,25 @@ export const GOALS = ['Bulk', 'Lean Bulk', 'Cut', 'Aggressive Cut']
 export const INTENSITIES = ['Relaxed', 'Moderate', 'Intense']
 export const EXPERIENCE = ['Beginner', 'Intermediate', 'Advanced']
 
-// Default inputs (mirrors the sample profile in the original sheet)
+// Default inputs — a NEUTRAL placeholder, not a person (value 6: defaults are
+// starting points, never identities). The configurator overwrites every field
+// from the athlete's own answers on onboarding; this only seeds the pre-onboard
+// preview and any non-onboarded fallback. Deliberately a generic adult, not the
+// original sheet's author profile (which was a 90kg advanced male cutting).
 export const DEFAULT_INPUTS = {
   startDate: new Date().toISOString().slice(0, 10),
-  periodDays: 100,
-  age: 28,
+  periodDays: 84,
+  age: 30,
   sex: 'Male',
-  heightCm: 183,
-  startWeightKg: 90,
-  experience: 'Advanced',
-  sessionsLast6m: 1,
-  goalWeightKg: 87,
+  heightCm: 175,
+  startWeightKg: 75,
+  experience: 'Intermediate',
+  sessionsLast6m: 3,
+  goalWeightKg: 73,
   goal: 'Cut',
   cardioMinsPerWeek: 0,
-  stepGoal: 10000,
-  gymSessionsPerWeek: 4,
+  stepGoal: 8000,
+  gymSessionsPerWeek: 3,
   weightIntensity: 'Moderate',
   cardioIntensity: 'Moderate',
   metabolismModifier: 1, // 1 = 100%
