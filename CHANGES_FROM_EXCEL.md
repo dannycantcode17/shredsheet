@@ -71,7 +71,10 @@ deviation from the spreadsheet is listed here so nothing is silent.
 
 ## Architecture changes
 - The 3 hidden calc tabs (WORKER / DAILY WORKER / GYM WORKER) → one pure-function
-  engine (`src/lib/engine.js`), unit-tested and readable.
+  engine (`src/lib/engine.js`), unit-tested and readable. The tests are real and
+  runnable (`npm test`, a zero-dependency `node --test` suite in `test/` covering
+  the engine, the insights and the storage normaliser) — so the engine covenant
+  is enforced, not just asserted.
 - The "copy a prompt into ChatGPT" mechanic → a **live in-app AI coach** that
   already holds your full data context. Key stays server-side (Cloudflare
   Function), with a bring-your-own-key fallback for local preview.

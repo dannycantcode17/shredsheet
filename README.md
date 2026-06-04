@@ -13,3 +13,6 @@ from the original Excel tool into a real web app.
 Stack: React + Vite, Recharts, Cloudflare Pages (+ Pages Function for the AI key).
 Engine in `src/lib/engine.js`. Start with **`SOUL.md`** (what this project stands
 for), then `CHANGES_FROM_EXCEL.md` (the engine ledger) and `DEPLOY.md`.
+
+Dev: `npm run dev` · Build: `npm run build` (→ `dist`) · **Test: `npm test`**
+(zero-dependency `node --test` suite over the engine, insights and storage).
