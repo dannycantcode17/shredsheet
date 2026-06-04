@@ -61,9 +61,12 @@ export default function BodycompDash() {
 
       <h2 className="section">Plan vs actual</h2>
       <div className="grid cols-3">
-        {muscleEstimated && <StatBox label="Muscle change (kg)" value={fmt(daily.cumMuscle, 2, true)} tone={daily.cumMuscle >= 0 ? 'pos' : 'neg'} rows={[{ k: 'Plan (period)', v: fmt(planRes.muscleChange, 1, true) }]} />}
-        {caloriesTracked && <StatBox label="Fat change (kg)" value={fmt(daily.cumFat, 2, true)} tone={daily.cumFat <= 0 ? 'pos' : 'neg'} rows={[{ k: 'Plan (period)', v: fmt(planRes.fatChange, 1, true) }]} />}
-        {muscleEstimated && <StatBox label="Shred efficiency" value={`${Math.round(actualClean * 100)}%`} tone={actualClean >= 0.5 ? 'pos' : 'neg'} rows={[{ k: 'Plan', v: `${Math.round(planRes.cleanliness * 100)}%` }]} />}
+        {muscleEstimated && <StatBox label="Muscle change (kg)" value={fmt(daily.cumMuscle, 2, true)} tone={daily.cumMuscle >= 0 ? 'pos' : 'neg'} rows={[{ k: 'Plan (period)', v: fmt(planRes.muscleChange, 1, true) }]}
+          estimate explain="Modelled from your training volume, protein, calorie balance and a newbie-gains curve — not a body scan. If the scale and mirror disagree with this, trust them, and nudge the muscle modifier in Inputs to match your reality." />}
+        {caloriesTracked && <StatBox label="Fat change (kg)" value={fmt(daily.cumFat, 2, true)} tone={daily.cumFat <= 0 ? 'pos' : 'neg'} rows={[{ k: 'Plan (period)', v: fmt(planRes.fatChange, 1, true) }]}
+          estimate explain="Inferred from your energy balance: (calories eaten − estimated burn) ÷ 7700 kcal per kg of fat, with muscle change added back. Your logged bodyweight is the ground truth this leans on." />}
+        {muscleEstimated && <StatBox label="Shred efficiency" value={`${Math.round(actualClean * 100)}%`} tone={actualClean >= 0.5 ? 'pos' : 'neg'} rows={[{ k: 'Plan', v: `${Math.round(planRes.cleanliness * 100)}%` }]}
+          estimate explain="How much of your weight change is the 'good' kind — muscle gained, fat lost. 100% is a clean recomp; lower means more of the change is the wrong direction. Derived from the muscle and fat estimates above, so it inherits their uncertainty." />}
         {caloriesTracked && <StatBox label="Avg calories" value={`${Math.round(daily.whole.avgCalories) || '–'}`} rows={[{ k: 'Target', v: `${Math.round(planRes.calorieTarget)}` }, { k: 'Last 7d', v: `${Math.round(daily.last7.avgCalories) || '–'}` }]} />}
         {caloriesTracked && <StatBox label="Avg balance (kcal)" value={fmt(daily.whole.avgDeficit, 0, true)} rows={[{ k: 'Target', v: fmt(planRes.dailyDelta, 0, true) }]} />}
         {caloriesTracked && <StatBox label="Avg protein (g)" value={`${Math.round(daily.whole.avgProtein) || '–'}`} rows={[{ k: 'Target', v: `${Math.round(planRes.proteinTarget)}` }]} />}

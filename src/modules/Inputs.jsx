@@ -59,9 +59,12 @@ export default function Inputs() {
       <h2 className="section">Calculated targets — do not edit</h2>
       <div className="grid cols-3">
         <StatBox label="Bodyweight change" value={`${fmt(planRes.weightChange, 1, true)} kg`} />
-        {muscleEstimated && <StatBox label="Muscle change" value={`${fmt(planRes.muscleChange, 1, true)} kg`} tone={planRes.muscleChange >= 0 ? 'pos' : 'neg'} />}
-        {caloriesTracked && <StatBox label="Fat change" value={`${fmt(planRes.fatChange, 1, true)} kg`} tone={planRes.fatChange <= 0 ? 'pos' : 'neg'} />}
-        {muscleEstimated && <StatBox label="Shred cleanliness" value={`${Math.round(planRes.cleanliness * 100)}%`} tone={planRes.cleanliness >= 0.5 ? 'pos' : 'neg'} />}
+        {muscleEstimated && <StatBox label="Muscle change" value={`${fmt(planRes.muscleChange, 1, true)} kg`} tone={planRes.muscleChange >= 0 ? 'pos' : 'neg'}
+          estimate explain="A projection for the whole period from your plan: training volume × newbie-gains × bulk/cut × protein × sex × your muscle modifier, off a 0.15 kg/week base. It's a model of an average body — the muscle modifier is yours to bend it to fit." />}
+        {caloriesTracked && <StatBox label="Fat change" value={`${fmt(planRes.fatChange, 1, true)} kg`} tone={planRes.fatChange <= 0 ? 'pos' : 'neg'}
+          estimate explain="The rest of your bodyweight change after muscle: bodyweight change − muscle change. Projected from your calorie target vs estimated maintenance." />}
+        {muscleEstimated && <StatBox label="Shred cleanliness" value={`${Math.round(planRes.cleanliness * 100)}%`} tone={planRes.cleanliness >= 0.5 ? 'pos' : 'neg'}
+          estimate explain="The quality of the projected change — muscle up, fat down scores high. It's the same 27-case sign table from the original sheet, ported exactly." />}
         <StatBox label="Daily calories" value={`${Math.round(planRes.calorieTarget)} kcal`} rows={[{ k: 'Maintenance (TDEE)', v: `${Math.round(planRes.tdee)} kcal` }]} />
         <StatBox label={`Daily ${planRes.dailyDelta >= 0 ? 'surplus' : 'deficit'}`} value={`${fmt(planRes.dailyDelta, 0, true)} kcal`} rows={[{ k: 'Protein target', v: `${Math.round(planRes.proteinTarget)} g` }]} />
       </div>
