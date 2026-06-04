@@ -3,15 +3,25 @@ import { useStore } from '../state/store.jsx'
 import { PageHead, Card, Field, Pill } from '../components/ui.jsx'
 import { exportState, importState } from '../lib/storage.js'
 import { getSystem, TRACK_LABELS } from '../lib/systems.js'
+import { ALL_TRACKING } from '../lib/configurator.js'
 import { onInstallAvailable, promptInstall } from '../lib/pwa.js'
 
 export default function Settings() {
-  const { state, setApiKey, replaceState, reset, reconfigure } = useStore()
+  const { state, setApiKey, replaceState, reset, reconfigure, setTracking } = useStore()
   const fileRef = useRef()
   const system = getSystem(state.system)
-  const tracked = state.tracking ? Object.keys(TRACK_LABELS).filter(k => state.tracking[k]) : []
+  const tracking = state.tracking || ALL_TRACKING
+  const tracked = Object.keys(TRACK_LABELS).filter(k => tracking[k])
   const [canInstall, setCanInstall] = useState(false)
   useEffect(() => onInstallAvailable(setCanInstall), [])
+
+  // Toggle a metric; muscle estimation is derived (needs the system to estimate
+  // muscle at all, plus calorie + bodyweight logging), so recompute it here.
+  const toggle = (key) => {
+    const next = { ...tracking, [key]: !tracking[key] }
+    const muscleEstimation = (system ? system.estimatesMuscle : true) && !!next.calories && !!next.weight
+    setTracking({ [key]: next[key], muscleEstimation })
+  }
   return (
     <>
       <PageHead eyebrow="System" title="Settings" sub="Your data lives in this browser. Back it up with export; move devices with import." />
@@ -36,6 +46,23 @@ export default function Settings() {
             <button className="btn" onClick={reconfigure}>Run the configurator</button>
           </div>
         )}
+      </Card>
+      <h2 className="section">What you track</h2>
+      <Card>
+        <div className="muted" style={{ marginBottom: 12, fontSize: 14 }}>Switch metrics on or off. Muscle &amp; fat estimation needs both calories and bodyweight{system && !system.estimatesMuscle ? ', and is unavailable on the Foundation system' : ''}.</div>
+        <div className="track-toggles">
+          {Object.keys(TRACK_LABELS).map(k => (
+            <label key={k} className={`track-toggle ${tracking[k] ? 'on' : ''} ${k === 'workouts' ? 'locked' : ''}`}>
+              <input type="checkbox" checked={!!tracking[k]} disabled={k === 'workouts'} onChange={() => toggle(k)} />
+              <span>{TRACK_LABELS[k]}</span>
+            </label>
+          ))}
+        </div>
+        <div style={{ marginTop: 12 }}>
+          {tracking.muscleEstimation
+            ? <Pill tone="good">Muscle &amp; fat estimation on</Pill>
+            : <Pill tone="muted">Muscle &amp; fat estimation off</Pill>}
+        </div>
       </Card>
       {canInstall && (
         <>

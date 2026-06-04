@@ -48,6 +48,12 @@ export function StoreProvider({ children }) {
   const daily = useMemo(() => computeDaily(state.inputs, state.plan, state.dailyLog, state.workoutLog, planRes),
     [state.inputs, state.plan, state.dailyLog, state.workoutLog, planRes])
 
-  const value = { state, ...api, view, setView, planRes, strength, daily }
+  // Single source of truth for what the assigned system lets us show.
+  // Legacy users (tracking === null) keep the original behaviour: everything on.
+  const t = state.tracking
+  const caloriesTracked = t ? !!t.calories : true
+  const muscleEstimated = t ? t.muscleEstimation !== false : true
+
+  const value = { state, ...api, view, setView, planRes, strength, daily, caloriesTracked, muscleEstimated }
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>
 }

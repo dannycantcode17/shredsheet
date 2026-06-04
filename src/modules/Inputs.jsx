@@ -11,7 +11,7 @@ const Pct = ({ k }) => { const { state, setInputs } = useStore(); return (
 )}
 
 export default function Inputs() {
-  const { state, setInputs, planRes } = useStore()
+  const { state, setInputs, planRes, caloriesTracked, muscleEstimated } = useStore()
   const i = state.inputs
   const cut = i.goal === 'Cut' || i.goal === 'Aggressive Cut'
   const warnGoal = (cut && i.goalWeightKg > i.startWeightKg) || (!cut && i.goalWeightKg < i.startWeightKg)
@@ -59,13 +59,14 @@ export default function Inputs() {
       <h2 className="section">Calculated targets — do not edit</h2>
       <div className="grid cols-3">
         <StatBox label="Bodyweight change" value={`${fmt(planRes.weightChange, 1, true)} kg`} />
-        <StatBox label="Muscle change" value={`${fmt(planRes.muscleChange, 1, true)} kg`} tone={planRes.muscleChange >= 0 ? 'pos' : 'neg'} />
-        <StatBox label="Fat change" value={`${fmt(planRes.fatChange, 1, true)} kg`} tone={planRes.fatChange <= 0 ? 'pos' : 'neg'} />
-        <StatBox label="Shred cleanliness" value={`${Math.round(planRes.cleanliness * 100)}%`} tone={planRes.cleanliness >= 0.5 ? 'pos' : 'neg'} />
+        {muscleEstimated && <StatBox label="Muscle change" value={`${fmt(planRes.muscleChange, 1, true)} kg`} tone={planRes.muscleChange >= 0 ? 'pos' : 'neg'} />}
+        {caloriesTracked && <StatBox label="Fat change" value={`${fmt(planRes.fatChange, 1, true)} kg`} tone={planRes.fatChange <= 0 ? 'pos' : 'neg'} />}
+        {muscleEstimated && <StatBox label="Shred cleanliness" value={`${Math.round(planRes.cleanliness * 100)}%`} tone={planRes.cleanliness >= 0.5 ? 'pos' : 'neg'} />}
         <StatBox label="Daily calories" value={`${Math.round(planRes.calorieTarget)} kcal`} rows={[{ k: 'Maintenance (TDEE)', v: `${Math.round(planRes.tdee)} kcal` }]} />
         <StatBox label={`Daily ${planRes.dailyDelta >= 0 ? 'surplus' : 'deficit'}`} value={`${fmt(planRes.dailyDelta, 0, true)} kcal`} rows={[{ k: 'Protein target', v: `${Math.round(planRes.proteinTarget)} g` }]} />
       </div>
-      {planRes.cleanliness < 0.5 && <div style={{ marginTop: 14 }}><Pill tone="warn">⚠ Cleanliness below 50% — a lot of your change is the wrong kind. Tune the plan or modifiers.</Pill></div>}
+      {muscleEstimated && planRes.cleanliness < 0.5 && <div style={{ marginTop: 14 }}><Pill tone="warn">⚠ Cleanliness below 50% — a lot of your change is the wrong kind. Tune the plan or modifiers.</Pill></div>}
+      {!muscleEstimated && <div style={{ marginTop: 14 }}><Pill tone="muted">Muscle estimation is off for your system — enable calorie + bodyweight tracking in Settings to see muscle and shred-cleanliness targets.</Pill></div>}
     </>
   )
 }

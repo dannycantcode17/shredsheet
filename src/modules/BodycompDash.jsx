@@ -9,7 +9,7 @@ const tip = { background: '#0f1c33', border: '1px solid rgba(255,255,255,0.12)',
 const grid = 'rgba(255,255,255,0.06)'
 
 export default function BodycompDash() {
-  const { state, planRes, daily } = useStore()
+  const { state, planRes, daily, caloriesTracked, muscleEstimated } = useStore()
   const days = planRes.days
   const lastLogged = daily.rows.reduce((m, r) => (r.logged ? r.dayNum : m), 0)
   const curve = daily.rows.map(r => ({
@@ -26,10 +26,14 @@ export default function BodycompDash() {
   return (
     <>
       <PageHead eyebrow="Insights · 5" title="Bodycomp Dashboard" sub="Planned vs actual fat, muscle and energy balance over your period." />
+      {!caloriesTracked && !muscleEstimated && (
+        <Card><span className="muted">Your system tracks lightly, so body-composition estimates are off. Turn on <strong>calorie</strong> and <strong>bodyweight</strong> tracking in Settings to unlock the fat, muscle and energy-balance curves.</span></Card>
+      )}
+      {(caloriesTracked || muscleEstimated) && <>
       {noData && <Card style={{ marginBottom: 18 }}><span className="muted">No daily data logged yet — the target lines are shown, your actual curves appear once you start logging in the Daily Log.</span></Card>}
 
       <div className="grid cols-2">
-        <Card>
+        {caloriesTracked && <Card>
           <div className="eyebrow">Shred Curve · Fat (loss shown positive)</div>
           <div className="chart-wrap"><ResponsiveContainer>
             <LineChart data={curve} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
@@ -40,8 +44,8 @@ export default function BodycompDash() {
             </LineChart>
           </ResponsiveContainer></div>
           <div className="legend"><span className="key"><span className="swatch" style={{ background: '#5aa9ff' }} />Actual</span><span className="key"><span className="swatch" style={{ background: '#5aa9ff', opacity: .5 }} />Target</span></div>
-        </Card>
-        <Card>
+        </Card>}
+        {muscleEstimated && <Card>
           <div className="eyebrow">Shred Curve · Muscle</div>
           <div className="chart-wrap"><ResponsiveContainer>
             <LineChart data={curve} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
@@ -52,19 +56,20 @@ export default function BodycompDash() {
             </LineChart>
           </ResponsiveContainer></div>
           <div className="legend"><span className="key"><span className="swatch" style={{ background: '#57e08b' }} />Actual</span><span className="key"><span className="swatch" style={{ background: '#57e08b', opacity: .5 }} />Target</span></div>
-        </Card>
+        </Card>}
       </div>
 
       <h2 className="section">Plan vs actual</h2>
       <div className="grid cols-3">
-        <StatBox label="Muscle change (kg)" value={fmt(daily.cumMuscle, 2, true)} tone={daily.cumMuscle >= 0 ? 'pos' : 'neg'} rows={[{ k: 'Plan (period)', v: fmt(planRes.muscleChange, 1, true) }]} />
-        <StatBox label="Fat change (kg)" value={fmt(daily.cumFat, 2, true)} tone={daily.cumFat <= 0 ? 'pos' : 'neg'} rows={[{ k: 'Plan (period)', v: fmt(planRes.fatChange, 1, true) }]} />
-        <StatBox label="Shred efficiency" value={`${Math.round(actualClean * 100)}%`} tone={actualClean >= 0.5 ? 'pos' : 'neg'} rows={[{ k: 'Plan', v: `${Math.round(planRes.cleanliness * 100)}%` }]} />
-        <StatBox label="Avg calories" value={`${Math.round(daily.whole.avgCalories) || '–'}`} rows={[{ k: 'Target', v: `${Math.round(planRes.calorieTarget)}` }, { k: 'Last 7d', v: `${Math.round(daily.last7.avgCalories) || '–'}` }]} />
-        <StatBox label="Avg balance (kcal)" value={fmt(daily.whole.avgDeficit, 0, true)} rows={[{ k: 'Target', v: fmt(planRes.dailyDelta, 0, true) }]} />
-        <StatBox label="Avg protein (g)" value={`${Math.round(daily.whole.avgProtein) || '–'}`} rows={[{ k: 'Target', v: `${Math.round(planRes.proteinTarget)}` }]} />
+        {muscleEstimated && <StatBox label="Muscle change (kg)" value={fmt(daily.cumMuscle, 2, true)} tone={daily.cumMuscle >= 0 ? 'pos' : 'neg'} rows={[{ k: 'Plan (period)', v: fmt(planRes.muscleChange, 1, true) }]} />}
+        {caloriesTracked && <StatBox label="Fat change (kg)" value={fmt(daily.cumFat, 2, true)} tone={daily.cumFat <= 0 ? 'pos' : 'neg'} rows={[{ k: 'Plan (period)', v: fmt(planRes.fatChange, 1, true) }]} />}
+        {muscleEstimated && <StatBox label="Shred efficiency" value={`${Math.round(actualClean * 100)}%`} tone={actualClean >= 0.5 ? 'pos' : 'neg'} rows={[{ k: 'Plan', v: `${Math.round(planRes.cleanliness * 100)}%` }]} />}
+        {caloriesTracked && <StatBox label="Avg calories" value={`${Math.round(daily.whole.avgCalories) || '–'}`} rows={[{ k: 'Target', v: `${Math.round(planRes.calorieTarget)}` }, { k: 'Last 7d', v: `${Math.round(daily.last7.avgCalories) || '–'}` }]} />}
+        {caloriesTracked && <StatBox label="Avg balance (kcal)" value={fmt(daily.whole.avgDeficit, 0, true)} rows={[{ k: 'Target', v: fmt(planRes.dailyDelta, 0, true) }]} />}
+        {caloriesTracked && <StatBox label="Avg protein (g)" value={`${Math.round(daily.whole.avgProtein) || '–'}`} rows={[{ k: 'Target', v: `${Math.round(planRes.proteinTarget)}` }]} />}
       </div>
 
+      {caloriesTracked && <>
       <h2 className="section">Calories in vs out</h2>
       <Card>
         <div className="chart-wrap"><ResponsiveContainer>
@@ -78,6 +83,8 @@ export default function BodycompDash() {
         </ResponsiveContainer></div>
         <div className="legend"><span className="key"><span className="swatch" style={{ background: '#f06fa8' }} />TDEE</span><span className="key"><span className="swatch" style={{ background: '#5aa9ff' }} />Consumed</span><span className="key"><span className="swatch" style={{ background: '#57e08b' }} />Daily balance</span></div>
       </Card>
+      </>}
+      </>}
     </>
   )
 }

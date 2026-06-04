@@ -137,9 +137,11 @@ export default function Configurator() {
   const result = useMemo(() => (phase === 'reveal' ? classify(answers) : null), [phase, answers])
 
   const goNext = () => { if (qi < QUESTIONS.length - 1) setQi(qi + 1); else setPhase('reveal') }
-  const goBack = () => { if (qi > 0) setQi(qi - 1); else setPhase('intro') }
+  const goBack = () => { clearTimeout(advanceTimer.current); if (qi > 0) setQi(qi - 1); else setPhase('intro') }
   const setAnswer = (key, value) => setAnswers(a => ({ ...a, [key]: value }))
-  const choose = (key, value) => { setAnswer(key, value); advanceTimer.current = setTimeout(goNext, 170) }
+  // Clear any pending auto-advance first, so a double-tap or a quick Back
+  // can't fire a stale goNext and skip / override a question.
+  const choose = (key, value) => { setAnswer(key, value); clearTimeout(advanceTimer.current); advanceTimer.current = setTimeout(goNext, 170) }
 
   const finish = () => {
     completeOnboarding({ systemId: result.systemId, inputsPatch: result.inputsPatch, tracking: result.tracking })
@@ -155,7 +157,7 @@ export default function Configurator() {
         {phase === 'questions' && (
           <div className="config-stage">
             <div className="config-progress">
-              <div className="config-progress-bar" style={{ width: `${(qi / QUESTIONS.length) * 100}%` }} />
+              <div className="config-progress-bar" style={{ width: `${((qi + 1) / QUESTIONS.length) * 100}%` }} />
             </div>
             <div className="config-step-no">Question {qi + 1} of {QUESTIONS.length}</div>
             <h1 className="config-h1 q">{q.prompt}</h1>

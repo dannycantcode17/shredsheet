@@ -300,3 +300,16 @@ a { color: var(--accent); }
 .bh-legend { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-top: 16px; }
 .bh-scale { height: 8px; width: 140px; border-radius: 999px; background: linear-gradient(90deg, rgb(51,71,95), rgb(90,209,199), rgb(240,179,78)); }
 .bh-readout { margin-top: 14px; font-size: 13px; color: var(--ink); line-height: 1.6; }
+
+/* Tracking toggles (Settings) */
+.track-toggles { display: flex; flex-wrap: wrap; gap: 10px; }
+.track-toggle {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 14px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line-strong); background: rgba(8,14,26,0.5);
+  color: var(--ink-soft); font-size: 14px; user-select: none;
+  transition: all 180ms var(--ease);
+}
+.track-toggle.on { border-color: var(--accent); background: rgba(90,209,199,0.14); color: #d7fbf6; }
+.track-toggle.locked { opacity: 0.7; cursor: default; }
+.track-toggle input { width: auto; margin: 0; accent-color: var(--accent); }

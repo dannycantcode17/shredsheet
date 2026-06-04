@@ -27,6 +27,10 @@ export default function DailyLog() {
   return (
     <>
       <PageHead eyebrow="Log · 3" title="Daily Log" sub="Your daily journal. Log yesterday's numbers. Calculated columns update as you go." />
+      {cols.length === 0 ? (
+        <Card><span className="muted">Your system tracks workouts only, so there's nothing to log here. Record your sets in the <strong>Workout Log</strong>, or switch on bodyweight / calorie tracking in Settings to use this daily journal.</span></Card>
+      ) : (
+      <>
       {!showMuscle && (
         <Card style={{ marginBottom: 18 }}>
           <Pill tone="muted">Your system tracks lightly — muscle &amp; fat estimation is off. Turn on calorie + bodyweight tracking in Settings to unlock it.</Pill>
@@ -60,6 +64,8 @@ export default function DailyLog() {
           </table>
         </div>
       </Card>
+      </>
+      )}
     </>
   )
 }

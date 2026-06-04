@@ -35,8 +35,12 @@ self.addEventListener('fetch', (e) => {
     e.respondWith((async () => {
       try {
         const fresh = await fetch(request)
-        const cache = await caches.open(CACHE)
-        cache.put('/', fresh.clone())
+        // Only cache a genuine, successful shell — never a 404/5xx/redirect,
+        // which would otherwise poison the offline fallback under key '/'.
+        if (fresh && fresh.ok && fresh.type === 'basic') {
+          const cache = await caches.open(CACHE)
+          cache.put('/', fresh.clone())
+        }
         return fresh
       } catch {
         return (await caches.match('/')) || (await caches.match('/index.html')) || Response.error()
