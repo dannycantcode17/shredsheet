@@ -2,12 +2,28 @@ import React, { useMemo, useState, useRef, useEffect } from 'react'
 import { useStore } from '../state/store.jsx'
 import { PageHead, Card, Pill } from '../components/ui.jsx'
 import { buildCoachContext } from '../lib/engine.js'
+import { deriveInsights } from '../lib/insights.js'
 import { askCoach } from '../lib/ai.js'
+import { getSystem, TRACK_LABELS } from '../lib/systems.js'
 
 export default function AICoach() {
-  const { state, planRes, daily, strength } = useStore()
-  const context = useMemo(() => buildCoachContext(state.inputs, state.plan, planRes, daily, strength), [state, planRes, daily, strength])
-  const [messages, setMessages] = useState([])
+  const { state, planRes, daily, strength, caloriesTracked, muscleEstimated, setCoachLog } = useStore()
+  const context = useMemo(() => {
+    const sys = getSystem(state.system)
+    const systemForCoach = sys ? {
+      coachDescriptor: sys.coachDescriptor,
+      tracking: state.tracking
+        ? Object.keys(TRACK_LABELS).filter(k => state.tracking[k]).map(k => TRACK_LABELS[k]).join(', ') || 'minimal'
+        : 'all',
+      muscleEstimation: state.tracking ? state.tracking.muscleEstimation : true,
+    } : null
+    // Hand the coach the same read the dashboard shows, so the team is coherent.
+    const proteinTracked = state.tracking ? !!state.tracking.protein : true
+    const insights = deriveInsights({ planRes, daily, flags: { calories: caloriesTracked, protein: proteinTracked, muscle: muscleEstimated } })
+    return buildCoachContext(state.inputs, state.plan, planRes, daily, strength, systemForCoach, insights)
+  }, [state, planRes, daily, strength, caloriesTracked, muscleEstimated])
+  // The conversation lives in the store, so it survives reloads and tab switches.
+  const messages = state.coachLog || []
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const logRef = useRef()
@@ -17,12 +33,12 @@ export default function AICoach() {
     const q = (text ?? input).trim()
     if (!q || busy) return
     const next = [...messages, { role: 'user', content: q }]
-    setMessages(next); setInput(''); setBusy(true)
+    setCoachLog(next); setInput(''); setBusy(true)
     try {
       const reply = await askCoach({ messages: next, context, apiKey: state.apiKey })
-      setMessages([...next, { role: 'assistant', content: reply }])
+      setCoachLog([...next, { role: 'assistant', content: reply }])
     } catch (e) {
-      setMessages([...next, { role: 'assistant', content: '⚠️ ' + e.message }])
+      setCoachLog([...next, { role: 'assistant', content: '⚠️ ' + e.message }])
     } finally { setBusy(false) }
   }
   const copyPrompt = () => { navigator.clipboard?.writeText(context); }
@@ -35,11 +51,14 @@ export default function AICoach() {
           <button className="btn primary" onClick={() => send('Analyse my data: what is working, what is not, and the single most important change I should make this week?')} disabled={busy}>⚡ Analyse my data</button>
           <button className="btn" onClick={() => send('In two lines, am I on track for my goal? Be blunt.')} disabled={busy}>Am I on track?</button>
         </div>
-        <button className="btn ghost" onClick={copyPrompt}>Copy full prompt</button>
+        <div className="btn-row">
+          {messages.length > 0 && <button className="btn ghost" onClick={() => setCoachLog([])} disabled={busy}>Clear chat</button>}
+          <button className="btn ghost" onClick={copyPrompt}>Copy full prompt</button>
+        </div>
       </div>
       <Card>
         <div className="chat-log" ref={logRef}>
-          {!messages.length && <div className="msg sys">The coach already has your full context loaded. Try a question, or hit “Analyse my data”.</div>}
+          {!messages.length && <div className="msg sys">The coach has your full context loaded and remembers this conversation between visits. Try a question, or hit “Analyse my data”.</div>}
           {messages.map((m, i) => <div key={i} className={`msg ${m.role === 'user' ? 'user' : 'ai'}`}>{m.content}</div>)}
           {busy && <div className="msg ai faint">Thinking…</div>}
         </div>

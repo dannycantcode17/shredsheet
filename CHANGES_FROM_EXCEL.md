@@ -26,9 +26,44 @@ deviation from the spreadsheet is listed here so nothing is silent.
 - Shred-cleanliness: the full 27-branch sign table, ported exactly.
 - Calorie target logic incl. bulk-aggressiveness and the muscle/fat surplus split.
 
+## Additions (post-rebuild, made in the open per the engine covenant)
+- **Focus insights (the analyst's "what to do next").** A transparent, non-AI
+  pass over the numbers (`src/lib/insights.js`) surfacing up to 3 prioritised
+  observations on the dashboard — value 1 (understanding includes what to do
+  next), works with no API key. Tone is governed by value 2 and the anti-soul
+  list: it names the single cheapest win, celebrates clean/over-performance, and
+  never shames, nags or bosses (watch-items inform, they don't block). Pure and
+  unit-checked across scenarios; nothing here touches the engine maths.
+  - *Recalibration nudge (value 4, "the model bends to the user"):* when the
+    scale disagrees with what logged intake predicts (≥14 days, real gap), it
+    invites the athlete to nudge their metabolism modifier — **direction only**,
+    no faked target number, fully reversible, user-applied. The original sheet's
+    celebrated recalibration mechanic, kept honest.
+- **Projection confidence bands.** Muscle and fat projections now carry an
+  uncertainty band instead of a single fake-precise number (value 4: show
+  uncertainty, never fake precision). `projectionRel(daysLogged)` /
+  `projectionBand(value, daysLogged, minAbs)` in `engine.js`, tuned by
+  `CONST.UNCERTAINTY = { REL_BASE: 0.4, REL_FLOOR: 0.12, REL_TAU: 30 }`.
+  - *Model:* relative half-width starts at ±40% (between-person response to the
+    same plan is large) and decays exponentially toward a ±12% floor as logged
+    days calibrate it (≈±0.96kg → ±0.30kg on a 2.4kg projection over 0→120 days).
+  - *Honesty:* explicitly a heuristic "typical range", **not** a statistical CI —
+    labelled as such in the UI and the Explain disclosures. Shown as a shaded
+    band on the dash curves and a ± on the plan figures.
+
+## Recalibrations (post-rebuild, made in the open per the engine covenant)
+- **Sex multiplier → 0.85, and un-buried.** Was finding #5 below. The female
+  muscle-gain multiplier is now `CONST.SEX_MUSCLE_MULT` in `defaults.js` (was a
+  literal `0.75` hardcoded inline in two engine formulas). Set to **0.85**.
+  - *Why:* the author's own methodology notes specified 0.85; the formula had
+    drifted to 0.75. Aligning to documented intent. It's a crude proxy for lower
+    absolute lean-mass gain, not a statement about training response — and the
+    user's muscle modifier remains the real override (value 4).
+  - *Effect:* female projections show ~13% more modelled muscle gain than before.
+  - *Soul:* values 3 (constants visible, not buried), 4 (honest), 6 (no harsher-
+    than-intended assumption about who the user is).
+
 ## Flagged for your call (kept faithful, but worth a look later)
-5. **Sex multiplier** — the *formula* used 0.75 for female; the methodology notes
-   said 0.85. I kept **0.75** to match the actual engine. Easy to flip in defaults.js.
 6. **Planned weekly sets** — the sheet sums every set across the whole split and
    calls it "per week". Preserved as-is; we can make it sessions/week aware later.
 7. **Surplus→fat partition** (bulk days only) — simplified to a clean version of
@@ -36,7 +71,10 @@ deviation from the spreadsheet is listed here so nothing is silent.
 
 ## Architecture changes
 - The 3 hidden calc tabs (WORKER / DAILY WORKER / GYM WORKER) → one pure-function
-  engine (`src/lib/engine.js`), unit-tested and readable.
+  engine (`src/lib/engine.js`), unit-tested and readable. The tests are real and
+  runnable (`npm test`, a zero-dependency `node --test` suite in `test/` covering
+  the engine, the insights and the storage normaliser) — so the engine covenant
+  is enforced, not just asserted.
 - The "copy a prompt into ChatGPT" mechanic → a **live in-app AI coach** that
   already holds your full data context. Key stays server-side (Cloudflare
   Function), with a bring-your-own-key fallback for local preview.

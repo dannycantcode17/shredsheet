@@ -27,6 +27,21 @@ export const CONST = {
   PENALTY_CAP_NEWBIE: -0.1,
   PENALTY_CAP_INTERMEDIATE: -0.8,
   PENALTY_CAP_EXPERIENCED: -2.4,
+
+  // Sex modifier on muscle-gain rate (WORKER!C87). The original FORMULA used
+  // 0.75 for female; the author's own methodology notes said 0.85. Aligned to
+  // 0.85 (documented intent) and surfaced here so it's tweakable, not buried in
+  // the formula. A crude proxy for lower absolute lean-mass gain — not a claim
+  // about training response. The user's muscle modifier is the real override.
+  // See CHANGES_FROM_EXCEL.md.
+  SEX_MUSCLE_MULT: { MALE: 1, FEMALE: 0.85 },
+
+  // Projection uncertainty (value 4: show uncertainty, never fake precision).
+  // Between-person variation in how a body responds to the same plan is large,
+  // so a projection is a central estimate, not a promise. We express it as a
+  // relative band that starts wide and narrows as logged days calibrate it.
+  // Heuristic, not a statistical CI — and labelled as such in the UI.
+  UNCERTAINTY: { REL_BASE: 0.4, REL_FLOOR: 0.12, REL_TAU: 30 },
 }
 
 // Newbie-gain factor by avg gym sessions/week over the last 6 months (WORKER B98:C105)
@@ -52,21 +67,25 @@ export const GOALS = ['Bulk', 'Lean Bulk', 'Cut', 'Aggressive Cut']
 export const INTENSITIES = ['Relaxed', 'Moderate', 'Intense']
 export const EXPERIENCE = ['Beginner', 'Intermediate', 'Advanced']
 
-// Default inputs (mirrors the sample profile in the original sheet)
+// Default inputs — a NEUTRAL placeholder, not a person (value 6: defaults are
+// starting points, never identities). The configurator overwrites every field
+// from the athlete's own answers on onboarding; this only seeds the pre-onboard
+// preview and any non-onboarded fallback. Deliberately a generic adult, not the
+// original sheet's author profile (which was a 90kg advanced male cutting).
 export const DEFAULT_INPUTS = {
   startDate: new Date().toISOString().slice(0, 10),
-  periodDays: 100,
-  age: 28,
+  periodDays: 84,
+  age: 30,
   sex: 'Male',
-  heightCm: 183,
-  startWeightKg: 90,
-  experience: 'Advanced',
-  sessionsLast6m: 1,
-  goalWeightKg: 87,
+  heightCm: 175,
+  startWeightKg: 75,
+  experience: 'Intermediate',
+  sessionsLast6m: 3,
+  goalWeightKg: 73,
   goal: 'Cut',
   cardioMinsPerWeek: 0,
-  stepGoal: 10000,
-  gymSessionsPerWeek: 4,
+  stepGoal: 8000,
+  gymSessionsPerWeek: 3,
   weightIntensity: 'Moderate',
   cardioIntensity: 'Moderate',
   metabolismModifier: 1, // 1 = 100%

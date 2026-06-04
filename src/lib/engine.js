@@ -93,7 +93,7 @@ export function computePlan(inputs, plan) {
   const newbie = NEWBIE_BY_SESSIONS[clamp(Math.round(n(inputs.sessionsLast6m)), 0, 7)] ?? 1 // C84 (base, pre-decay)
   const bulkcut = BULKCUT_BY_GOAL[inputs.goal] ?? 1                  // C85
   const proteinMult = 1                                             // C86 (planned assumes hit)
-  const sexMult = String(inputs.sex).toUpperCase() === 'MALE' ? 1 : 0.75 // C87
+  const sexMult = String(inputs.sex).toUpperCase() === 'MALE' ? CONST.SEX_MUSCLE_MULT.MALE : CONST.SEX_MUSCLE_MULT.FEMALE // C87
   const muscleMod = n(inputs.muscleModifier, 1)                     // C88
   const finalMuscleMod = volMult * newbie * bulkcut * proteinMult * sexMult * muscleMod // C89
   const penalty = riskPenalty({ vol: volMult, newbie, bulkcut, protein: null, cap: penaltyCap(inputs.sessionsLast6m) }) // C90
@@ -133,6 +133,21 @@ export function computePlan(inputs, plan) {
     multipliers: { volMult, newbie, bulkcut, proteinMult, sexMult, muscleMod, finalMuscleMod, penalty },
     days,
   }
+}
+
+// ---- projection uncertainty (value 4: show uncertainty, never fake precision) ----
+// Relative band half-width. Wide with no data, narrowing toward a floor as the
+// athlete logs days and their own results calibrate the model. Heuristic, not a
+// statistical confidence interval — the UI labels it as a "typical range".
+export function projectionRel(daysLogged = 0) {
+  const { REL_BASE, REL_FLOOR, REL_TAU } = CONST.UNCERTAINTY
+  return REL_FLOOR + (REL_BASE - REL_FLOOR) * Math.exp(-Math.max(0, n(daysLogged)) / REL_TAU)
+}
+// Central value -> {lo, hi, half, rel}. minAbs keeps the band visible near zero.
+export function projectionBand(value, daysLogged = 0, minAbs = 0) {
+  const rel = projectionRel(daysLogged)
+  const half = Math.max(Math.abs(n(value)) * rel, n(minAbs))
+  return { lo: n(value) - half, hi: n(value) + half, half, rel }
 }
 
 // ============================================================
@@ -184,7 +199,7 @@ export function computeDaily(inputs, plan, dailyLog, workoutLog, plannedRef) {
   const priority = isCut ? 'Fat Loss' : 'Muscle Gain'
   const BMR = bmr(inputs)
   const proteinTarget = plannedRef?.proteinTarget || n(inputs.startWeightKg) * (isCut ? 2.2 : 2)
-  const sexMult = String(inputs.sex).toUpperCase() === 'MALE' ? 1 : 0.75
+  const sexMult = String(inputs.sex).toUpperCase() === 'MALE' ? CONST.SEX_MUSCLE_MULT.MALE : CONST.SEX_MUSCLE_MULT.FEMALE
   const muscleMod = n(inputs.muscleModifier, 1)
 
   // index workout sets by ISO date
@@ -304,14 +319,20 @@ function round(x, dp = 0) { const f = 10 ** dp; return Math.round(x * f) / f }
 // ============================================================
 // 4) AI CONTEXT  (port of WORKER master-prompt builder C206-C232)
 // ============================================================
-export function buildCoachContext(inputs, plan, planRes, daily, strength) {
+export function buildCoachContext(inputs, plan, planRes, daily, strength, system = null, insights = []) {
   const f = (x, dp = 1) => (x == null || Number.isNaN(x) ? '-' : (x >= 0 ? '+' : '') + Number(x).toFixed(dp))
   const planLines = plan.filter(d => d.name).map(d =>
     `${d.name}: ` + d.exercises.filter(e => e.name).map(e => `${e.name} (${e.sets || 0} sets${e.goalWeight ? `, target ${e.goalWeight}kg x${e.goalReps}` : ''})`).join('; ')
   ).join('\n')
   const w = daily.whole
-  return `You are the AI coach inside The Shredsheet (the 3-person team: the app is the analyst, you are the coach, the user is the athlete). Be encouraging, clear, didactic, never cringe. British English.
-
+  const systemLine = system
+    ? `\nSYSTEM\nThe athlete was profiled by the configurator and is on the ${system.coachDescriptor} Tracking: ${system.tracking || ''}. ${system.muscleEstimation === false ? 'They are NOT tracking enough (no calorie + weight logging) for a reliable muscle estimate — coach on training and habits, and gently encourage fuller tracking rather than quoting muscle figures as fact.' : 'Full data tracking is on, so muscle/fat estimates are meaningful.'}\n`
+    : ''
+  return `You are Coach in The Shredsheet — a three-person team: the app is the analyst, you are the coach, the athlete is the user.
+Your covenant: curious, approachable, didactic, encouraging, empathetic, optimistic, motivating, a little fun. Never cringe, judgmental, patronising, superior or fake. Straightforward, conversational and CONCISE — short by default, and invite the back-and-forth rather than dumping everything at once. Before any deep technical dive, ask first ("want the lowdown on how we estimate this?").
+House tone: smarter, not harder. Respect the athlete's effort; never push more for its own sake; no guilt, no streak pressure. Missed a day or a log? "That's fine, just estimate."
+On honesty: the numbers below are ESTIMATES from a model of an average body, not measurements. Treat them as such, flag uncertainty plainly, and when the athlete's own reality (scale, mirror, how they feel) disagrees with the model, trust the athlete and suggest they tune their manual modifiers in Inputs — the model bends to them, not the other way round. You support and inform; you never dictate or shame. British English.
+${systemLine}
 USER & GOAL
 Age ${inputs.age}, ${inputs.sex}, ${inputs.heightCm}cm, start ${inputs.startWeightKg}kg -> goal ${inputs.goalWeightKg}kg over ${inputs.periodDays} days. Primary goal: ${inputs.goal}. Experience: ${inputs.experience}. Gym ${inputs.gymSessionsPerWeek}x/wk, ${inputs.stepGoal} steps/day, ${inputs.cardioMinsPerWeek} cardio mins/wk. Manual modifiers: metabolism ${Math.round(inputs.metabolismModifier*100)}%, muscle ${Math.round(inputs.muscleModifier*100)}%.
 
@@ -327,5 +348,5 @@ Cumulative so far: muscle ${f(daily.cumMuscle,2)}kg, fat ${f(daily.cumFat,2)}kg,
 
 STRENGTH (top lifts)
 ${strength.key6.map(e => `${e.name}: 1RM ${e.first}->${e.max}kg${e.target?` (target ${e.target}, ${e.hitTarget?'HIT':'not yet'})`:''}`).join('\n') || '(no workouts logged)'}
-`
+${insights.length ? `\nANALYST'S READ (what the app is already showing the athlete on their dashboard — stay consistent with this; don't contradict it)\n${insights.map(i => `- [${i.tone}] ${i.title}: ${i.text}`).join('\n')}\n` : ''}`
 }

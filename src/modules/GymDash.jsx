@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useStore } from '../state/store.jsx'
 import { PageHead, Card, StatBox, Pill, fmt } from '../components/ui.jsx'
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import BodyHeatmap from '../components/BodyHeatmap.jsx'
+import { computeMuscleVolume } from '../lib/muscles.js'
 
 const axis = { stroke: 'rgba(244,244,245,0.4)', fontSize: 11 }
 const tip = { background: '#0f1c33', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, fontSize: 12 }
@@ -28,6 +30,7 @@ export default function GymDash() {
   const dl = Object.values(state.dailyLog).filter(x => ['cardioMins', 'steps', 'calories', 'protein', 'weight'].some(k => x[k] !== '' && x[k] != null))
   const mean = (sel) => dl.length ? dl.reduce((a, x) => a + (parseFloat(x[sel]) || 0), 0) / dl.length : 0
   const noLifts = !key6.length
+  const muscleVolume = useMemo(() => computeMuscleVolume(state.workoutLog), [state.workoutLog])
 
   return (
     <>
@@ -42,6 +45,14 @@ export default function GymDash() {
             {key6.map((e, i) => <Line key={e.name} type="monotone" dataKey={e.name} stroke={LINE_COLORS[i % LINE_COLORS.length]} dot={false} strokeWidth={2.2} connectNulls />)}
           </LineChart>
         </ResponsiveContainer></div>
+      </Card>
+
+      <h2 className="section">Muscle balance</h2>
+      <Card>
+        <div className="eyebrow">Body heatmap · training volume by muscle group</div>
+        <div style={{ marginTop: 14 }}>
+          <BodyHeatmap volume={muscleVolume} />
+        </div>
       </Card>
 
       <h2 className="section">Key lift analysis</h2>
