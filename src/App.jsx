@@ -8,6 +8,7 @@ import WorkoutLog from './modules/WorkoutLog.jsx'
 import BodycompDash from './modules/BodycompDash.jsx'
 import GymDash from './modules/GymDash.jsx'
 import AICoach from './modules/AICoach.jsx'
+import EngineRoom from './modules/EngineRoom.jsx'
 import Settings from './modules/Settings.jsx'
 
 const NAV = [
@@ -48,6 +49,9 @@ export default function App() {
             </div>
           ))}
           <div className="nav-group-label">System</div>
+          <button className={`nav-item ${v === 'engine' ? 'active' : ''}`} onClick={() => setView('engine')}>
+            <span className="ix">⚙</span>Engine Room
+          </button>
           <button className={`nav-item ${v === 'settings' ? 'active' : ''}`} onClick={() => setView('settings')}>
             <span className="ix">⚙</span>Settings
           </button>
@@ -60,6 +64,7 @@ export default function App() {
           {v === 'bodycomp' && <BodycompDash />}
           {v === 'gym' && <GymDash />}
           {v === 'coach' && <AICoach />}
+          {v === 'engine' && <EngineRoom />}
           {v === 'settings' && <Settings />}
         </main>
       </div>

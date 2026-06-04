@@ -331,3 +331,16 @@ a { color: var(--accent); }
   margin-top: 8px; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft);
   border-left: 2px solid rgba(90,209,199,0.4); padding-left: 10px;
 }
+.explain-body code, .muted code { font-size: 11.5px; background: rgba(255,255,255,0.07); padding: 1px 5px; border-radius: 5px; }
+
+/* Engine Room: inspectable depths (value 3) */
+.eng-table { display: flex; flex-direction: column; }
+.eng-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.eng-row:last-child { border-bottom: none; }
+.eng-row.strong { font-weight: 700; }
+.eng-row.strong .eng-v { color: var(--accent); }
+.eng-k { font-size: 13.5px; display: flex; flex-direction: column; }
+.eng-sub { font-size: 11.5px; color: var(--ink-soft); font-weight: 400; margin-top: 2px; }
+.eng-v { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.eng-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 28px; }
+@media (max-width: 640px) { .eng-grid { grid-template-columns: 1fr; } }
