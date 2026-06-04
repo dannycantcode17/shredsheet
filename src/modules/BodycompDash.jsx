@@ -2,6 +2,7 @@ import React from 'react'
 import { useStore } from '../state/store.jsx'
 import { PageHead, Card, StatBox, fmt } from '../components/ui.jsx'
 import { cleanliness, projectionBand } from '../lib/engine.js'
+import { deriveInsights } from '../lib/insights.js'
 import { ResponsiveContainer, LineChart, Line, ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts'
 
 const axis = { stroke: 'rgba(244,244,245,0.4)', fontSize: 11 }
@@ -10,6 +11,8 @@ const grid = 'rgba(255,255,255,0.06)'
 
 export default function BodycompDash() {
   const { state, planRes, daily, caloriesTracked, muscleEstimated } = useStore()
+  const proteinTracked = state.tracking ? !!state.tracking.protein : true
+  const insights = deriveInsights({ planRes, daily, flags: { calories: caloriesTracked, protein: proteinTracked, muscle: muscleEstimated } })
   const days = planRes.days
   const lastLogged = daily.rows.reduce((m, r) => (r.logged ? r.dayNum : m), 0)
   // Uncertainty band around the projection, narrowing as logged days calibrate it.
@@ -35,6 +38,19 @@ export default function BodycompDash() {
   return (
     <>
       <PageHead eyebrow="Insights · 5" title="Bodycomp Dashboard" sub="Planned vs actual fat, muscle and energy balance over your period." />
+      {insights.length > 0 && (
+        <Card className="focus">
+          <div className="eyebrow">Focus · what the numbers are saying</div>
+          <ul className="focus-list">
+            {insights.map((it, i) => (
+              <li key={i} className={`focus-item ${it.tone}`}>
+                <span className="focus-dot" />
+                <div><strong>{it.title}.</strong> {it.text}</div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
       {!caloriesTracked && !muscleEstimated && (
         <Card><span className="muted">Your system tracks lightly, so body-composition estimates are off. Turn on <strong>calorie</strong> and <strong>bodyweight</strong> tracking in Settings to unlock the fat, muscle and energy-balance curves.</span></Card>
       )}

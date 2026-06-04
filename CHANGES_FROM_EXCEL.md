@@ -27,6 +27,13 @@ deviation from the spreadsheet is listed here so nothing is silent.
 - Calorie target logic incl. bulk-aggressiveness and the muscle/fat surplus split.
 
 ## Additions (post-rebuild, made in the open per the engine covenant)
+- **Focus insights (the analyst's "what to do next").** A transparent, non-AI
+  pass over the numbers (`src/lib/insights.js`) surfacing up to 3 prioritised
+  observations on the dashboard — value 1 (understanding includes what to do
+  next), works with no API key. Tone is governed by value 2 and the anti-soul
+  list: it names the single cheapest win, celebrates clean/over-performance, and
+  never shames, nags or bosses (watch-items inform, they don't block). Pure and
+  unit-checked across scenarios; nothing here touches the engine maths.
 - **Projection confidence bands.** Muscle and fat projections now carry an
   uncertainty band instead of a single fake-precise number (value 4: show
   uncertainty, never fake precision). `projectionRel(daysLogged)` /

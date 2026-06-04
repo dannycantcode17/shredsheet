@@ -344,3 +344,13 @@ a { color: var(--accent); }
 .eng-v { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .eng-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 28px; }
 @media (max-width: 640px) { .eng-grid { grid-template-columns: 1fr; } }
+
+/* Focus card: the analyst's what-to-do-next (value 1) */
+.card.focus { margin-bottom: 18px; }
+.focus-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.focus-item { display: flex; gap: 11px; font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+.focus-item strong { color: var(--ink); }
+.focus-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; background: var(--ink-soft); }
+.focus-item.good .focus-dot { background: var(--pos, #57e08b); }
+.focus-item.note .focus-dot { background: var(--accent); }
+.focus-item.watch .focus-dot { background: var(--warn); }
