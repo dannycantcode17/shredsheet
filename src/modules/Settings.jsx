@@ -1,14 +1,17 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useStore } from '../state/store.jsx'
 import { PageHead, Card, Field, Pill } from '../components/ui.jsx'
 import { exportState, importState } from '../lib/storage.js'
 import { getSystem, TRACK_LABELS } from '../lib/systems.js'
+import { onInstallAvailable, promptInstall } from '../lib/pwa.js'
 
 export default function Settings() {
   const { state, setApiKey, replaceState, reset, reconfigure } = useStore()
   const fileRef = useRef()
   const system = getSystem(state.system)
   const tracked = state.tracking ? Object.keys(TRACK_LABELS).filter(k => state.tracking[k]) : []
+  const [canInstall, setCanInstall] = useState(false)
+  useEffect(() => onInstallAvailable(setCanInstall), [])
   return (
     <>
       <PageHead eyebrow="System" title="Settings" sub="Your data lives in this browser. Back it up with export; move devices with import." />
@@ -34,6 +37,17 @@ export default function Settings() {
           </div>
         )}
       </Card>
+      {canInstall && (
+        <>
+          <h2 className="section">Install</h2>
+          <Card>
+            <div className="row-between">
+              <span className="muted">Add The Shredsheet to your home screen for an app-like, offline-capable experience.</span>
+              <button className="btn primary" onClick={promptInstall}>⬇ Install app</button>
+            </div>
+          </Card>
+        </>
+      )}
       <h2 className="section">AI coach connection</h2>
       <Card>
         <Field label="Anthropic API key (optional)" hint="Only needed for the live preview before you deploy. Once deployed to Cloudflare Pages with a server-side key, you can leave this blank. Stored locally in this browser only.">
