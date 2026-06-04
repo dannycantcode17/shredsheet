@@ -93,7 +93,7 @@ export function computePlan(inputs, plan) {
   const newbie = NEWBIE_BY_SESSIONS[clamp(Math.round(n(inputs.sessionsLast6m)), 0, 7)] ?? 1 // C84 (base, pre-decay)
   const bulkcut = BULKCUT_BY_GOAL[inputs.goal] ?? 1                  // C85
   const proteinMult = 1                                             // C86 (planned assumes hit)
-  const sexMult = String(inputs.sex).toUpperCase() === 'MALE' ? 1 : 0.75 // C87
+  const sexMult = String(inputs.sex).toUpperCase() === 'MALE' ? CONST.SEX_MUSCLE_MULT.MALE : CONST.SEX_MUSCLE_MULT.FEMALE // C87
   const muscleMod = n(inputs.muscleModifier, 1)                     // C88
   const finalMuscleMod = volMult * newbie * bulkcut * proteinMult * sexMult * muscleMod // C89
   const penalty = riskPenalty({ vol: volMult, newbie, bulkcut, protein: null, cap: penaltyCap(inputs.sessionsLast6m) }) // C90
@@ -184,7 +184,7 @@ export function computeDaily(inputs, plan, dailyLog, workoutLog, plannedRef) {
   const priority = isCut ? 'Fat Loss' : 'Muscle Gain'
   const BMR = bmr(inputs)
   const proteinTarget = plannedRef?.proteinTarget || n(inputs.startWeightKg) * (isCut ? 2.2 : 2)
-  const sexMult = String(inputs.sex).toUpperCase() === 'MALE' ? 1 : 0.75
+  const sexMult = String(inputs.sex).toUpperCase() === 'MALE' ? CONST.SEX_MUSCLE_MULT.MALE : CONST.SEX_MUSCLE_MULT.FEMALE
   const muscleMod = n(inputs.muscleModifier, 1)
 
   // index workout sets by ISO date

@@ -27,6 +27,14 @@ export const CONST = {
   PENALTY_CAP_NEWBIE: -0.1,
   PENALTY_CAP_INTERMEDIATE: -0.8,
   PENALTY_CAP_EXPERIENCED: -2.4,
+
+  // Sex modifier on muscle-gain rate (WORKER!C87). The original FORMULA used
+  // 0.75 for female; the author's own methodology notes said 0.85. Aligned to
+  // 0.85 (documented intent) and surfaced here so it's tweakable, not buried in
+  // the formula. A crude proxy for lower absolute lean-mass gain — not a claim
+  // about training response. The user's muscle modifier is the real override.
+  // See CHANGES_FROM_EXCEL.md.
+  SEX_MUSCLE_MULT: { MALE: 1, FEMALE: 0.85 },
 }
 
 // Newbie-gain factor by avg gym sessions/week over the last 6 months (WORKER B98:C105)

@@ -26,9 +26,19 @@ deviation from the spreadsheet is listed here so nothing is silent.
 - Shred-cleanliness: the full 27-branch sign table, ported exactly.
 - Calorie target logic incl. bulk-aggressiveness and the muscle/fat surplus split.
 
+## Recalibrations (post-rebuild, made in the open per the engine covenant)
+- **Sex multiplier → 0.85, and un-buried.** Was finding #5 below. The female
+  muscle-gain multiplier is now `CONST.SEX_MUSCLE_MULT` in `defaults.js` (was a
+  literal `0.75` hardcoded inline in two engine formulas). Set to **0.85**.
+  - *Why:* the author's own methodology notes specified 0.85; the formula had
+    drifted to 0.75. Aligning to documented intent. It's a crude proxy for lower
+    absolute lean-mass gain, not a statement about training response — and the
+    user's muscle modifier remains the real override (value 4).
+  - *Effect:* female projections show ~13% more modelled muscle gain than before.
+  - *Soul:* values 3 (constants visible, not buried), 4 (honest), 6 (no harsher-
+    than-intended assumption about who the user is).
+
 ## Flagged for your call (kept faithful, but worth a look later)
-5. **Sex multiplier** — the *formula* used 0.75 for female; the methodology notes
-   said 0.85. I kept **0.75** to match the actual engine. Easy to flip in defaults.js.
 6. **Planned weekly sets** — the sheet sums every set across the whole split and
    calls it "per week". Preserved as-is; we can make it sessions/week aware later.
 7. **Surplus→fat partition** (bulk days only) — simplified to a clean version of
