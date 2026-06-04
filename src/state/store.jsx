@@ -17,8 +17,14 @@ const seed = () => ({
   tracking: null,        // { workouts, weight, calories, protein, steps, cardio, muscleEstimation }
 })
 
+// Data saved before the configurator existed has no `onboarded:true`. If such a
+// user clearly already used the app, don't drop them into the wizard (and don't
+// disrupt a restored backup) — treat existing data as already onboarded.
+const hasPriorUse = (s) => !!(s && ((s.workoutLog?.length) || (s.dailyLog && Object.keys(s.dailyLog).length) || s.system))
+const migrate = (s) => (s && !s.onboarded && hasPriorUse(s) ? { ...s, onboarded: true } : s)
+
 export function StoreProvider({ children }) {
-  const [state, setState] = useState(() => ({ ...seed(), ...(loadState() || {}) }))
+  const [state, setState] = useState(() => ({ ...seed(), ...migrate(loadState() || {}) }))
   const [view, setView] = useState('dashboard')
 
   useEffect(() => { saveState(state) }, [state])
@@ -38,7 +44,7 @@ export function StoreProvider({ children }) {
     })),
     // Re-run the wizard without wiping logged data.
     reconfigure: () => setState(s => ({ ...s, onboarded: false })),
-    replaceState: (next) => setState({ ...seed(), ...next }),
+    replaceState: (next) => setState({ ...seed(), ...migrate(next) }),
     reset: () => setState(seed()),
   }), [])
 
