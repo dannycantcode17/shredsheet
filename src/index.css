@@ -290,3 +290,13 @@ a { color: var(--accent); }
   .config-card { border-radius: 18px; }
   .opt { padding: 14px 15px; }
 }
+
+/* ============================================================
+   BODY HEATMAP
+   ============================================================ */
+.bh-views { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+.bh-figure { flex: 1; min-width: 130px; max-width: 220px; text-align: center; }
+.bh-caption { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-top: 4px; }
+.bh-legend { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-top: 16px; }
+.bh-scale { height: 8px; width: 140px; border-radius: 999px; background: linear-gradient(90deg, rgb(51,71,95), rgb(90,209,199), rgb(240,179,78)); }
+.bh-readout { margin-top: 14px; font-size: 13px; color: var(--ink); line-height: 1.6; }
