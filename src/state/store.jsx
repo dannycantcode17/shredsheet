@@ -15,6 +15,7 @@ const seed = () => ({
   onboarded: false,
   system: null,          // id of the configurator-assigned system (see lib/systems.js)
   tracking: null,        // { workouts, weight, calories, protein, steps, cardio, muscleEstimation }
+  coachLog: [],          // persisted AI Coach conversation (local-first; the user's data)
 })
 
 // Data saved before the configurator existed has no `onboarded:true`. If such a
@@ -37,6 +38,7 @@ export function StoreProvider({ children }) {
     setApiKey: (apiKey) => setState(s => ({ ...s, apiKey })),
     setOnboarded: (v) => setState(s => ({ ...s, onboarded: v })),
     setTracking: (patch) => setState(s => ({ ...s, tracking: { ...(s.tracking || {}), ...patch } })),
+    setCoachLog: (coachLog) => setState(s => ({ ...s, coachLog })),
     // The configurator's payload lands here: seed the inputs, record the
     // assigned system + tracking map, and mark onboarding done in one update.
     completeOnboarding: ({ systemId, inputsPatch, tracking }) => setState(s => ({

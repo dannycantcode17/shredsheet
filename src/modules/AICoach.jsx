@@ -6,7 +6,7 @@ import { askCoach } from '../lib/ai.js'
 import { getSystem, TRACK_LABELS } from '../lib/systems.js'
 
 export default function AICoach() {
-  const { state, planRes, daily, strength } = useStore()
+  const { state, planRes, daily, strength, setCoachLog } = useStore()
   const context = useMemo(() => {
     const sys = getSystem(state.system)
     const systemForCoach = sys ? {
@@ -18,7 +18,8 @@ export default function AICoach() {
     } : null
     return buildCoachContext(state.inputs, state.plan, planRes, daily, strength, systemForCoach)
   }, [state, planRes, daily, strength])
-  const [messages, setMessages] = useState([])
+  // The conversation lives in the store, so it survives reloads and tab switches.
+  const messages = state.coachLog || []
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const logRef = useRef()
@@ -28,12 +29,12 @@ export default function AICoach() {
     const q = (text ?? input).trim()
     if (!q || busy) return
     const next = [...messages, { role: 'user', content: q }]
-    setMessages(next); setInput(''); setBusy(true)
+    setCoachLog(next); setInput(''); setBusy(true)
     try {
       const reply = await askCoach({ messages: next, context, apiKey: state.apiKey })
-      setMessages([...next, { role: 'assistant', content: reply }])
+      setCoachLog([...next, { role: 'assistant', content: reply }])
     } catch (e) {
-      setMessages([...next, { role: 'assistant', content: '⚠️ ' + e.message }])
+      setCoachLog([...next, { role: 'assistant', content: '⚠️ ' + e.message }])
     } finally { setBusy(false) }
   }
   const copyPrompt = () => { navigator.clipboard?.writeText(context); }
@@ -46,11 +47,14 @@ export default function AICoach() {
           <button className="btn primary" onClick={() => send('Analyse my data: what is working, what is not, and the single most important change I should make this week?')} disabled={busy}>⚡ Analyse my data</button>
           <button className="btn" onClick={() => send('In two lines, am I on track for my goal? Be blunt.')} disabled={busy}>Am I on track?</button>
         </div>
-        <button className="btn ghost" onClick={copyPrompt}>Copy full prompt</button>
+        <div className="btn-row">
+          {messages.length > 0 && <button className="btn ghost" onClick={() => setCoachLog([])} disabled={busy}>Clear chat</button>}
+          <button className="btn ghost" onClick={copyPrompt}>Copy full prompt</button>
+        </div>
       </div>
       <Card>
         <div className="chat-log" ref={logRef}>
-          {!messages.length && <div className="msg sys">The coach already has your full context loaded. Try a question, or hit “Analyse my data”.</div>}
+          {!messages.length && <div className="msg sys">The coach has your full context loaded and remembers this conversation between visits. Try a question, or hit “Analyse my data”.</div>}
           {messages.map((m, i) => <div key={i} className={`msg ${m.role === 'user' ? 'user' : 'ai'}`}>{m.content}</div>)}
           {busy && <div className="msg ai faint">Thinking…</div>}
         </div>
