@@ -35,6 +35,13 @@ export const CONST = {
   // about training response. The user's muscle modifier is the real override.
   // See CHANGES_FROM_EXCEL.md.
   SEX_MUSCLE_MULT: { MALE: 1, FEMALE: 0.85 },
+
+  // Projection uncertainty (value 4: show uncertainty, never fake precision).
+  // Between-person variation in how a body responds to the same plan is large,
+  // so a projection is a central estimate, not a promise. We express it as a
+  // relative band that starts wide and narrows as logged days calibrate it.
+  // Heuristic, not a statistical CI — and labelled as such in the UI.
+  UNCERTAINTY: { REL_BASE: 0.4, REL_FLOOR: 0.12, REL_TAU: 30 },
 }
 
 // Newbie-gain factor by avg gym sessions/week over the last 6 months (WORKER B98:C105)

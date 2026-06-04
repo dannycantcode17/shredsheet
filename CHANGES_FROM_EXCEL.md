@@ -26,6 +26,19 @@ deviation from the spreadsheet is listed here so nothing is silent.
 - Shred-cleanliness: the full 27-branch sign table, ported exactly.
 - Calorie target logic incl. bulk-aggressiveness and the muscle/fat surplus split.
 
+## Additions (post-rebuild, made in the open per the engine covenant)
+- **Projection confidence bands.** Muscle and fat projections now carry an
+  uncertainty band instead of a single fake-precise number (value 4: show
+  uncertainty, never fake precision). `projectionRel(daysLogged)` /
+  `projectionBand(value, daysLogged, minAbs)` in `engine.js`, tuned by
+  `CONST.UNCERTAINTY = { REL_BASE: 0.4, REL_FLOOR: 0.12, REL_TAU: 30 }`.
+  - *Model:* relative half-width starts at ±40% (between-person response to the
+    same plan is large) and decays exponentially toward a ±12% floor as logged
+    days calibrate it (≈±0.96kg → ±0.30kg on a 2.4kg projection over 0→120 days).
+  - *Honesty:* explicitly a heuristic "typical range", **not** a statistical CI —
+    labelled as such in the UI and the Explain disclosures. Shown as a shaded
+    band on the dash curves and a ± on the plan figures.
+
 ## Recalibrations (post-rebuild, made in the open per the engine covenant)
 - **Sex multiplier → 0.85, and un-buried.** Was finding #5 below. The female
   muscle-gain multiplier is now `CONST.SEX_MUSCLE_MULT` in `defaults.js` (was a

@@ -2,6 +2,7 @@ import React from 'react'
 import { useStore } from '../state/store.jsx'
 import { PageHead, Card, Field, StatBox, Pill, fmt } from '../components/ui.jsx'
 import { GOALS, INTENSITIES, EXPERIENCE } from '../lib/defaults.js'
+import { projectionBand } from '../lib/engine.js'
 
 const Num = ({ k }) => { const { state, setInputs } = useStore(); return (
   <input type="number" value={state.inputs[k] ?? ''} onChange={e => setInputs({ [k]: e.target.value })} />
@@ -11,9 +12,12 @@ const Pct = ({ k }) => { const { state, setInputs } = useStore(); return (
 )}
 
 export default function Inputs() {
-  const { state, setInputs, planRes, caloriesTracked, muscleEstimated } = useStore()
+  const { state, setInputs, planRes, daily, caloriesTracked, muscleEstimated } = useStore()
   const i = state.inputs
   const cut = i.goal === 'Cut' || i.goal === 'Aggressive Cut'
+  const daysLogged = daily?.whole?.daysLogged || 0
+  const muscleB = projectionBand(planRes.muscleChange, daysLogged, 0.2)
+  const fatB = projectionBand(planRes.fatChange, daysLogged, 0.2)
   const warnGoal = (cut && i.goalWeightKg > i.startWeightKg) || (!cut && i.goalWeightKg < i.startWeightKg)
   return (
     <>
@@ -59,10 +63,10 @@ export default function Inputs() {
       <h2 className="section">Calculated targets — do not edit</h2>
       <div className="grid cols-3">
         <StatBox label="Bodyweight change" value={`${fmt(planRes.weightChange, 1, true)} kg`} />
-        {muscleEstimated && <StatBox label="Muscle change" value={`${fmt(planRes.muscleChange, 1, true)} kg`} tone={planRes.muscleChange >= 0 ? 'pos' : 'neg'}
-          estimate explain="A projection for the whole period from your plan: training volume × newbie-gains × bulk/cut × protein × sex × your muscle modifier, off a 0.15 kg/week base. It's a model of an average body — the muscle modifier is yours to bend it to fit." />}
-        {caloriesTracked && <StatBox label="Fat change" value={`${fmt(planRes.fatChange, 1, true)} kg`} tone={planRes.fatChange <= 0 ? 'pos' : 'neg'}
-          estimate explain="The rest of your bodyweight change after muscle: bodyweight change − muscle change. Projected from your calorie target vs estimated maintenance." />}
+        {muscleEstimated && <StatBox label="Muscle change" value={`${fmt(planRes.muscleChange, 1, true)} kg`} tone={planRes.muscleChange >= 0 ? 'pos' : 'neg'} rows={[{ k: 'Typical range', v: `±${muscleB.half.toFixed(1)} kg` }]}
+          estimate explain="A projection for the whole period from your plan: training volume × newbie-gains × bulk/cut × protein × sex × your muscle modifier, off a 0.15 kg/week base. It's a model of an average body — the ±range is the typical spread, widest before you log and narrowing as your own results come in. The muscle modifier is yours to bend it to fit." />}
+        {caloriesTracked && <StatBox label="Fat change" value={`${fmt(planRes.fatChange, 1, true)} kg`} tone={planRes.fatChange <= 0 ? 'pos' : 'neg'} rows={[{ k: 'Typical range', v: `±${fatB.half.toFixed(1)} kg` }]}
+          estimate explain="The rest of your bodyweight change after muscle: bodyweight change − muscle change. Projected from your calorie target vs estimated maintenance. The ±range narrows as you log." />}
         {muscleEstimated && <StatBox label="Shred cleanliness" value={`${Math.round(planRes.cleanliness * 100)}%`} tone={planRes.cleanliness >= 0.5 ? 'pos' : 'neg'}
           estimate explain="The quality of the projected change — muscle up, fat down scores high. It's the same 27-case sign table from the original sheet, ported exactly." />}
         <StatBox label="Daily calories" value={`${Math.round(planRes.calorieTarget)} kcal`} rows={[{ k: 'Maintenance (TDEE)', v: `${Math.round(planRes.tdee)} kcal` }]} />

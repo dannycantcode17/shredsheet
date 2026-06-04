@@ -135,6 +135,21 @@ export function computePlan(inputs, plan) {
   }
 }
 
+// ---- projection uncertainty (value 4: show uncertainty, never fake precision) ----
+// Relative band half-width. Wide with no data, narrowing toward a floor as the
+// athlete logs days and their own results calibrate the model. Heuristic, not a
+// statistical confidence interval — the UI labels it as a "typical range".
+export function projectionRel(daysLogged = 0) {
+  const { REL_BASE, REL_FLOOR, REL_TAU } = CONST.UNCERTAINTY
+  return REL_FLOOR + (REL_BASE - REL_FLOOR) * Math.exp(-Math.max(0, n(daysLogged)) / REL_TAU)
+}
+// Central value -> {lo, hi, half, rel}. minAbs keeps the band visible near zero.
+export function projectionBand(value, daysLogged = 0, minAbs = 0) {
+  const rel = projectionRel(daysLogged)
+  const half = Math.max(Math.abs(n(value)) * rel, n(minAbs))
+  return { lo: n(value) - half, hi: n(value) + half, half, rel }
+}
+
 // ============================================================
 // 2) STRENGTH  (GYM WORKER) — 1RM progression per exercise
 // ============================================================
