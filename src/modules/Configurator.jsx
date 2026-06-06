@@ -1,6 +1,6 @@
 import React, { useState, createContext, useContext } from 'react'
 import { useStore } from '../state/store.jsx'
-import { INTENSITIES, EXPERIENCE } from '../lib/defaults.js'
+import { INTENSITIES } from '../lib/defaults.js'
 
 // ============================================================
 // THE CONFIGURATOR — gated onboarding flow.
@@ -168,6 +168,63 @@ function goalSuggestion(d) {
   return { head: 'A realistic pace', body, action: null }
 }
 
+// A9 — aesthetic exercise grid. The user taps lifts they've done regularly
+// and we infer training level from the pattern. The big technical compounds
+// count for a bit more. Only the inferred experience reaches the engine.
+const EXERCISE_GRID = [
+  { name: 'Squat', emoji: '🦵', technical: true },
+  { name: 'Deadlift', emoji: '🏋️', technical: true },
+  { name: 'Bench Press', emoji: '💪', technical: true },
+  { name: 'Overhead Press', emoji: '🙆', technical: true },
+  { name: 'Pull-up', emoji: '🧗', technical: true },
+  { name: 'Barbell Row', emoji: '🚣', technical: true },
+  { name: 'Romanian Deadlift', emoji: '🦿', technical: true },
+  { name: 'Hip Thrust', emoji: '🍑', technical: false },
+  { name: 'Lunge', emoji: '🚶', technical: false },
+  { name: 'Lat Pulldown', emoji: '🔽', technical: false },
+  { name: 'Bicep Curl', emoji: '💪', technical: false },
+  { name: 'Lateral Raise', emoji: '✋', technical: false },
+]
+const TECHNICAL = new Set(EXERCISE_GRID.filter(e => e.technical).map(e => e.name))
+function inferExperience(list) {
+  if (!list.length) return ''
+  const tech = list.filter(n => TECHNICAL.has(n)).length
+  const score = list.length + tech * 0.6
+  if (score <= 3) return 'Beginner'
+  if (score <= 7.5) return 'Intermediate'
+  return 'Advanced'
+}
+
+function ExerciseGrid() {
+  const { draft, update } = useDraft()
+  const selected = draft.exercisesDone || []
+  const toggle = (name) => {
+    const next = selected.includes(name) ? selected.filter(x => x !== name) : [...selected, name]
+    update({ exercisesDone: next, experience: inferExperience(next) })
+  }
+  return (
+    <div className="cfg-block">
+      <label className="cfg-label">Which of these have you done regularly?</label>
+      <div className="cfg-grid">
+        {EXERCISE_GRID.map(e => {
+          const on = selected.includes(e.name)
+          return (
+            <button key={e.name} type="button" className={`cfg-tile ${on ? 'selected' : ''}`}
+              aria-pressed={on} onClick={() => toggle(e.name)}>
+              <span className="emoji">{e.emoji}</span>{e.name}
+            </button>
+          )
+        })}
+      </div>
+      <Sign>
+        {draft.experience
+          ? `We'll read your training level as ${draft.experience.toLowerCase()} from this — it calibrates how fast we expect strength and muscle to move.`
+          : 'Tap everything you train often. We read your training level from the pattern — no need to label yourself.'}
+      </Sign>
+    </div>
+  )
+}
+
 function GoalSuggestion() {
   const { draft, update } = useDraft()
   const s = goalSuggestion(draft)
@@ -280,11 +337,7 @@ export default function Configurator() {
       render: () => (
         <>
           <h1 className="cfg-q">How you train.</h1>
-          <div className="cfg-block">
-            <label className="cfg-label">Training experience</label>
-            <SelectField k="experience" options={EXPERIENCE} />
-            <Sign>Calibrates how quickly we expect your strength and muscle to move.</Sign>
-          </div>
+          <ExerciseGrid />
           <div className="cfg-block">
             <label className="cfg-label">Gym sessions / week, last 6 months</label>
             <NumField k="sessionsLast6m" suffix="/ wk" />
@@ -338,8 +391,10 @@ export default function Configurator() {
   const finish = () => {
     // commit only the values the user actually filled in; untouched keys
     // keep their store defaults (start date, metabolism/muscle modifiers).
+    // exercisesDone is a UI-only helper (it infers experience) — not an
+    // engine input, so it never goes into the store.
     const filled = Object.fromEntries(
-      Object.entries(draft).filter(([, v]) => v !== '' && v != null)
+      Object.entries(draft).filter(([k, v]) => k !== 'exercisesDone' && v !== '' && v != null)
     )
     setInputs(filled)
     setOnboarded(true)
