@@ -65,7 +65,16 @@ export default function Inputs() {
         <StatBox label="Daily calories" value={`${Math.round(planRes.calorieTarget)} kcal`} rows={[{ k: 'Maintenance (TDEE)', v: `${Math.round(planRes.tdee)} kcal` }]} />
         <StatBox label={`Daily ${planRes.dailyDelta >= 0 ? 'surplus' : 'deficit'}`} value={`${fmt(planRes.dailyDelta, 0, true)} kcal`} rows={[{ k: 'Protein target', v: `${Math.round(planRes.proteinTarget)} g` }]} />
       </div>
-      {planRes.cleanliness < 0.5 && <div style={{ marginTop: 14 }}><Pill tone="warn">⚠ Cleanliness below 50% — a lot of your change is the wrong kind. Tune the plan or modifiers.</Pill></div>}
+      {planRes.cleanliness < 0.5 && (
+        <Card style={{ marginTop: 16, borderColor: 'rgba(240,179,78,0.35)' }}>
+          <Pill tone="warn">Worth a look</Pill>
+          <p className="muted" style={{ margin: '10px 0 0', fontSize: 14, lineHeight: 1.55 }}>
+            Right now, less than half of your projected change is the kind you're aiming for — more of it is fat
+            (on a gain) or muscle (on a cut) than ideal. Nudging your training volume, protein or the modifiers
+            above can tighten that up. Totally fine to leave it for now, too.
+          </p>
+        </Card>
+      )}
     </>
   )
 }
