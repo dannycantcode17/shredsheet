@@ -2,7 +2,7 @@
 // 1) Prefer the serverless proxy /api/coach (key stays server-side on Cloudflare Pages).
 // 2) Fallback: user-supplied key from Settings, called direct from the browser
 //    (fine for a personal single-user tool; see CHANGES_FROM_EXCEL.md / deploy notes).
-export async function askCoach({ messages, context, apiKey, model = 'claude-3-5-sonnet-20241022' }) {
+export async function askCoach({ messages, context, apiKey, model = 'claude-sonnet-4-6' }) {
   // try serverless proxy first
   try {
     const res = await fetch('/api/coach', {
