@@ -256,6 +256,14 @@ select option { background: #0f1c33; }
 .wl-right { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
 .wl-1rm { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
 .wl-1rm small { display: block; font-size: 10px; color: var(--ink-faint); font-weight: 600; letter-spacing: 0.05em; }
+
+/* Gym Dash — key lift progress list */
+.gd-lift { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.gd-lift:last-child { border-bottom: none; }
+.gd-name { font-weight: 600; font-size: 15px; }
+.gd-prog { font-size: 12px; color: var(--ink-faint); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.gd-right { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+.gd-gain { font-weight: 700; font-variant-numeric: tabular-nums; }
 .legend .key { display:inline-flex; align-items:center; gap: 7px; }
 .swatch { width: 12px; height: 3px; border-radius: 2px; display:inline-block; }
 
