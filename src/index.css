@@ -151,9 +151,16 @@ input, select, textarea {
   border-radius: 10px;
   color: var(--ink);
   font: inherit; font-size: 15px;
+  line-height: 1.2;
+  vertical-align: middle;
   padding: 11px 13px;
   transition: border-color 200ms var(--ease), box-shadow 200ms var(--ease);
 }
+textarea { line-height: 1.5; }
+/* keep numbers vertically centred and drop the fiddly spinners on phones */
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 input:focus, select:focus, textarea:focus {
   outline: none; border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(90,209,199,0.16);
