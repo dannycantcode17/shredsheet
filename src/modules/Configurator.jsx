@@ -66,7 +66,8 @@ export default function Configurator() {
               </div>
             </div>
           </div>
-          <p className="cfg-lede">Set it up once and that loop runs for you. Takes about a minute.</p>
+          <p className="cfg-lede">First we build your system — who you are, what you're chasing. Takes about a minute.</p>
+          <div className="cfg-signpost"><span className="ico">🔒</span><span>Your coach joins once your system is set — no point coaching a blank sheet.</span></div>
         </>
       ),
     },
@@ -153,17 +154,17 @@ export default function Configurator() {
         </>
       ),
     },
-    // 4 — review
+    // 4 — review (system built -> coach steps in)
     {
-      eyebrow: 'All set · 4',
+      eyebrow: 'System built · 4',
       render: () => (
         <>
-          <h1 className="cfg-q">That's your system.</h1>
+          <h1 className="cfg-q">Your system's built.</h1>
           <p className="cfg-lede">
             {i.sex}, {i.age} · {i.heightCm}cm · {i.startWeightKg}kg → {i.goalWeightKg}kg.
             Goal: {i.goal} over {i.periodDays} days.
           </p>
-          <p className="cfg-lede">You can fine-tune any of this later in Settings → Inputs.</p>
+          <p className="cfg-lede">Now your coach steps in — they've got everything they need. Tweak any of this later in Settings → Inputs.</p>
         </>
       ),
     },
@@ -191,7 +192,7 @@ export default function Configurator() {
         <div className="cfg-nav">
           {step > 0 && <button className="btn back" onClick={back}>←</button>}
           <button className="btn primary" onClick={next}>
-            {step === 0 ? 'Get started' : last ? 'Enter the Shredsheet' : 'Continue'}
+            {step === 0 ? 'Build my system' : last ? 'Meet your coach' : 'Continue'}
           </button>
         </div>
       </div>
