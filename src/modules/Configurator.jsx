@@ -15,6 +15,8 @@ import { INTENSITIES } from '../lib/defaults.js'
 
 const DraftCtx = createContext(null)
 const useDraft = () => useContext(DraftCtx)
+// a field counts as answered when it's neither blank nor null
+const isFilled = (d, k) => d[k] !== '' && d[k] != null
 
 // little number field used throughout the flow
 function NumField({ k, suffix }) {
@@ -273,6 +275,7 @@ function ClaudeConnect() {
   return (
     <>
       <div className="cfg-mark"><ClaudeMark /></div>
+      <span className="pill muted" style={{ marginBottom: 10 }}>Coming soon</span>
       <h1 className="cfg-q">Connect Claude.</h1>
       <p className="cfg-lede">This is the good bit. Hook up Claude and the Shredsheet starts running itself — your coach reads every number, builds your plan, and can act on it. Even hands-free.</p>
       <button type="button" className="cfg-connect-btn" onClick={() => setAsked(true)}>
@@ -367,6 +370,7 @@ export default function Configurator() {
     // — About you (one per screen) —
     {
       eyebrow: 'About you',
+      requires: 'sex',
       render: () => (
         <>
           <h1 className="cfg-q">Are you male or female?</h1>
@@ -377,6 +381,7 @@ export default function Configurator() {
     },
     {
       eyebrow: 'About you',
+      requires: 'age',
       render: () => (
         <>
           <h1 className="cfg-q">How old are you?</h1>
@@ -387,6 +392,7 @@ export default function Configurator() {
     },
     {
       eyebrow: 'About you',
+      requires: 'heightCm',
       render: () => (
         <>
           <h1 className="cfg-q">How tall are you?</h1>
@@ -396,6 +402,7 @@ export default function Configurator() {
     },
     {
       eyebrow: 'About you',
+      requires: 'startWeightKg',
       render: () => (
         <>
           <h1 className="cfg-q">What do you weigh right now?</h1>
@@ -408,6 +415,7 @@ export default function Configurator() {
     // — Your goal (one per screen) —
     {
       eyebrow: 'Your goal',
+      requires: 'goal',
       render: () => (
         <>
           <h1 className="cfg-q">What's your goal?</h1>
@@ -419,6 +427,7 @@ export default function Configurator() {
     },
     {
       eyebrow: 'Your goal',
+      requires: 'goalWeightKg',
       render: () => (
         <>
           <h1 className="cfg-q">What weight are you aiming for?</h1>
@@ -430,6 +439,7 @@ export default function Configurator() {
     },
     {
       eyebrow: 'Your goal',
+      requires: 'periodDays',
       render: () => (
         <>
           <h1 className="cfg-q">Over how long?</h1>
@@ -522,6 +532,7 @@ export default function Configurator() {
       eyebrow: 'Your vibe',
       render: () => (
         <>
+          <span className="pill muted" style={{ marginBottom: 10 }}>Preview</span>
           <h1 className="cfg-q">Pick your vibe.</h1>
           <VibePicker />
         </>
@@ -555,7 +566,8 @@ export default function Configurator() {
     setOnboarded(true)
     setView('dashboard')
   }
-  const next = () => last ? finish() : setStep(s => s + 1)
+  const stepOk = !steps[step].requires || isFilled(draft, steps[step].requires)
+  const next = () => { if (!stepOk) return; last ? finish() : setStep(s => s + 1) }
   const back = () => setStep(s => Math.max(0, s - 1))
   const pct = `${(step / (steps.length - 1)) * 100}%`
 
@@ -574,7 +586,7 @@ export default function Configurator() {
 
           <div className="cfg-nav">
             {step > 0 && <button className="btn back" onClick={back}>←</button>}
-            <button className="btn primary" onClick={next}>
+            <button className="btn primary" onClick={next} disabled={!stepOk}>
               {step === 0 ? 'Build my system' : last ? 'Meet your coach' : 'Continue'}
             </button>
           </div>
