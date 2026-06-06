@@ -250,6 +250,74 @@ function ExerciseGrid() {
   )
 }
 
+// Claude spark mark — a radial burst in Claude's signature warm colour.
+function ClaudeMark({ size = 60 }) {
+  const rays = Array.from({ length: 12 }, (_, idx) => {
+    const a = (idx * 30) * Math.PI / 180
+    const r1 = 13
+    const r2 = idx % 2 ? 30 : 42
+    return <line key={idx} x1={Math.cos(a) * r1} y1={Math.sin(a) * r1} x2={Math.cos(a) * r2} y2={Math.sin(a) * r2} />
+  })
+  return (
+    <svg viewBox="-50 -50 100 100" width={size} height={size} aria-hidden="true">
+      <g stroke="currentColor" strokeWidth="7" strokeLinecap="round">{rays}</g>
+    </svg>
+  )
+}
+
+// PLACEHOLDER step — the Claude connector. Non-functional for now; it holds
+// the spot for the headless / Claude-MCP integration (the coach reading your
+// data and building/running your plan). 'Connect' just acknowledges intent.
+function ClaudeConnect() {
+  const [asked, setAsked] = useState(false)
+  return (
+    <>
+      <div className="cfg-mark"><ClaudeMark /></div>
+      <h1 className="cfg-q">Connect Claude.</h1>
+      <p className="cfg-lede">This is the good bit. Hook up Claude and the Shredsheet starts running itself — your coach reads every number, builds your plan, and can act on it. Even hands-free.</p>
+      <button type="button" className="cfg-connect-btn" onClick={() => setAsked(true)}>
+        <ClaudeMark size={18} /> Connect Claude
+      </button>
+      {asked
+        ? <div className="cfg-signpost" style={{ marginTop: 14 }}><span className="ico">✦</span><span>Coming soon — we're wiring this up. Your spot's saved, and your coach still works the moment you're set up.</span></div>
+        : <div className="cfg-signpost" style={{ marginTop: 14 }}><span className="ico">→</span><span>No rush — you can do this any time. Skip ahead and your coach still has your back.</span></div>}
+    </>
+  )
+}
+
+// PLACEHOLDER step — pick a cinematic background "vibe". Saves the preference;
+// full theming is on the way (this isn't a boring dark/light toggle).
+const VIBES = [
+  { value: 'Beach', title: 'Beach', sub: 'The original — sun, sea, calm', grad: 'linear-gradient(180deg,#0a1628,#1a2c4a 48%,#8fb0c4)' },
+  { value: 'Dusk', title: 'Dusk', sub: 'Warm sunset haze', grad: 'linear-gradient(180deg,#1a1026,#5a2b3e 55%,#f0a35e)' },
+  { value: 'Aurora', title: 'Aurora', sub: 'Cool northern lights', grad: 'linear-gradient(180deg,#06121f,#0f3b3a 50%,#57e08b)' },
+  { value: 'Midnight', title: 'Midnight', sub: 'Deep, dark focus', grad: 'linear-gradient(180deg,#05080f,#0d1424 70%,#1a2c4a)' },
+  { value: 'Daylight', title: 'Light', sub: 'Clean and bright', grad: 'linear-gradient(180deg,#eef3f8,#cdd9e6 60%,#9fb3c7)' },
+]
+function VibePicker() {
+  const { draft, update } = useDraft()
+  return (
+    <>
+      <div className="cfg-vibes">
+        {VIBES.map(v => {
+          const on = draft.vibe === v.value
+          return (
+            <button key={v.value} type="button" className={`cfg-vibe ${on ? 'selected' : ''}`}
+              aria-pressed={on} onClick={() => update({ vibe: v.value })}>
+              <div className="cfg-vibe-prev" style={{ background: v.grad }} />
+              <div className="cfg-vibe-meta">
+                <div className="v-title">{v.title}{v.value === 'Beach' ? ' · now' : ''}</div>
+                <div className="v-sub">{v.sub}</div>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+      <Sign>Sets the mood of your whole app. More vibes on the way — full theming's coming, this just saves your pick.</Sign>
+    </>
+  )
+}
+
 export default function Configurator() {
   const { setInputs, setOnboarded, setView } = useStore()
   const [step, setStep] = useState(0)
@@ -439,6 +507,23 @@ export default function Configurator() {
           <h1 className="cfg-q">How hard's your cardio?</h1>
           <ChoiceChips k="cardioIntensity" options={INTENSITY_CHOICES} />
           <Sign>Tunes how many calories your cardio burns.</Sign>
+        </>
+      ),
+    },
+
+    // — Connect Claude (placeholder) —
+    {
+      eyebrow: 'Your coach',
+      render: () => <ClaudeConnect />,
+    },
+
+    // — Your vibe (placeholder) —
+    {
+      eyebrow: 'Your vibe',
+      render: () => (
+        <>
+          <h1 className="cfg-q">Pick your vibe.</h1>
+          <VibePicker />
         </>
       ),
     },
