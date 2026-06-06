@@ -25,7 +25,7 @@ export default function BodycompDash() {
 
   return (
     <>
-      <PageHead eyebrow="Insights · 5" title="Bodycomp Dashboard" sub="The plan vs. what actually happened — fat, muscle and where every calorie went. No hiding from the curves." />
+      <PageHead eyebrow="Insights" title="Bodycomp Dashboard" sub="The plan vs. what actually happened — fat, muscle and where every calorie went. No hiding from the curves." />
       {noData && <Card style={{ marginBottom: 18 }}><span className="muted">Nothing logged yet, so these are just the targets for now. Start filling in the Daily Log and your real curves will come out to play.</span></Card>}
 
       <div className="grid cols-2">

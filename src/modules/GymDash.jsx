@@ -31,7 +31,7 @@ export default function GymDash() {
 
   return (
     <>
-      <PageHead eyebrow="Insights · 6" title="Gym Dashboard" sub="Strength heading up and to the right (that's the goal, anyway), plus where your training's dialled in — and where it's quietly skiving." />
+      <PageHead eyebrow="Insights" title="Gym Dashboard" sub="Strength heading up and to the right (that's the goal, anyway), plus where your training's dialled in — and where it's quietly skiving." />
       {noLifts && <Card style={{ marginBottom: 18 }}><span className="muted">No sets logged yet — fill in the Workout Log and your strength curves will show up to flex right here.</span></Card>}
 
       <Card>

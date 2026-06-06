@@ -13,7 +13,7 @@ export default function WorkoutLog() {
   const del = (i) => setWorkoutLog(log.filter((_, j) => j !== i))
   return (
     <>
-      <PageHead eyebrow="Log · 4" title="Workout Log" sub="One row per set — yes, every set. This is where your gains start keeping receipts: volume, calories torched, muscle and strength all trace back here." />
+      <PageHead eyebrow="Log" title="Workout Log" sub="One row per set — yes, every set. This is where your gains start keeping receipts: volume, calories torched, muscle and strength all trace back here." />
       <Card>
         <div style={{ overflowX: 'auto' }}>
           <table className="tbl">

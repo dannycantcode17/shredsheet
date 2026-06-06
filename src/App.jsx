@@ -12,17 +12,17 @@ import Configurator from './modules/Configurator.jsx'
 
 const NAV = [
   { group: 'Insights', items: [
-    { key: 'bodycomp', ix: '5', label: 'Bodycomp Dash' },
-    { key: 'gym', ix: '6', label: 'Gym Dash' },
-    { key: 'coach', ix: '7', label: 'AI Coach' },
+    { key: 'bodycomp', label: 'Bodycomp Dash' },
+    { key: 'gym', label: 'Gym Dash' },
+    { key: 'coach', label: 'AI Coach' },
   ]},
   { group: 'Setup', items: [
-    { key: 'inputs', ix: '1', label: 'Inputs' },
-    { key: 'plan', ix: '2', label: 'Gym Plan' },
+    { key: 'inputs', label: 'Inputs' },
+    { key: 'plan', label: 'Gym Plan' },
   ]},
   { group: 'Log', items: [
-    { key: 'daily', ix: '3', label: 'Daily Log' },
-    { key: 'workout', ix: '4', label: 'Workout Log' },
+    { key: 'daily', label: 'Daily Log' },
+    { key: 'workout', label: 'Workout Log' },
   ]},
 ]
 
@@ -41,14 +41,14 @@ export default function App() {
               <div className="nav-group-label">{g.group}</div>
               {g.items.map(it => (
                 <button key={it.key} className={`nav-item ${v === it.key ? 'active' : ''}`} onClick={() => setView(it.key)}>
-                  <span className="ix">{it.ix}</span>{it.label}
+                  {it.label}
                 </button>
               ))}
             </div>
           ))}
           <div className="nav-group-label">System</div>
           <button className={`nav-item ${v === 'settings' ? 'active' : ''}`} onClick={() => setView('settings')}>
-            <span className="ix">⚙</span>Settings
+            Settings
           </button>
         </aside>
         <main className="main">
