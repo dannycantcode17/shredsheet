@@ -64,6 +64,67 @@ function ChoiceChips({ k, options, columns }) {
   )
 }
 
+// height with a cm <-> ft/in toggle. Only heightCm ever reaches the draft
+// (and therefore the engine) — the ft/in entry is converted silently.
+function HeightField() {
+  const { draft, update } = useDraft()
+  const [unit, setUnit] = useState('cm')
+  const [ft, setFt] = useState('')
+  const [inch, setInch] = useState('')
+
+  const toCm = (f, n) => {
+    const c = (parseFloat(f) || 0) * 30.48 + (parseFloat(n) || 0) * 2.54
+    return c ? Math.round(c) : ''
+  }
+  const switchTo = (u) => {
+    if (u === unit) return
+    if (u === 'ft') {
+      const cm = parseFloat(draft.heightCm)
+      if (cm) {
+        const totalIn = cm / 2.54
+        const f = Math.floor(totalIn / 12)
+        setFt(String(f)); setInch(String(Math.round(totalIn - f * 12)))
+      }
+    }
+    setUnit(u)
+  }
+  const onFt = (v) => { setFt(v); update({ heightCm: toCm(v, inch) }) }
+  const onIn = (v) => { setInch(v); update({ heightCm: toCm(ft, v) }) }
+
+  return (
+    <div className="cfg-block">
+      <div className="row-between" style={{ marginBottom: 9 }}>
+        <label className="cfg-label" style={{ margin: 0 }}>How tall are you?</label>
+        <div className="cfg-seg">
+          <button type="button" className={unit === 'cm' ? 'on' : ''} onClick={() => switchTo('cm')}>cm</button>
+          <button type="button" className={unit === 'ft' ? 'on' : ''} onClick={() => switchTo('ft')}>ft / in</button>
+        </div>
+      </div>
+      {unit === 'cm' ? (
+        <div className="cfg-row" style={{ alignItems: 'center' }}>
+          <input className="cfg-input" type="number" inputMode="numeric"
+            value={draft.heightCm ?? ''} onChange={e => update({ heightCm: e.target.value })} />
+          <span className="faint" style={{ flex: '0 0 auto', fontSize: 14 }}>cm</span>
+        </div>
+      ) : (
+        <div className="cfg-row">
+          <div className="cfg-row" style={{ alignItems: 'center' }}>
+            <input className="cfg-input" type="number" inputMode="numeric" placeholder="5"
+              value={ft} onChange={e => onFt(e.target.value)} />
+            <span className="faint" style={{ flex: '0 0 auto', fontSize: 14 }}>ft</span>
+          </div>
+          <div className="cfg-row" style={{ alignItems: 'center' }}>
+            <input className="cfg-input" type="number" inputMode="numeric" placeholder="10"
+              value={inch} onChange={e => onIn(e.target.value)} />
+            <span className="faint" style={{ flex: '0 0 auto', fontSize: 14 }}>in</span>
+          </div>
+        </div>
+      )}
+      <Sign>Part of your BMR calculation.{unit === 'ft' && draft.heightCm ? ` We'll log it as ${draft.heightCm}cm.` : ''}</Sign>
+    </div>
+  )
+}
+
 const GOAL_CHOICES = [
   { value: 'Cut', title: 'Cut', sub: 'Drop fat, hold onto muscle' },
   { value: 'Lean Bulk', title: 'Lean Bulk', sub: 'Build muscle, keep fat in check' },
@@ -131,11 +192,7 @@ export default function Configurator() {
             <NumField k="age" suffix="years" />
             <Sign>Feeds your metabolism (BMR) — the calories you'd burn doing nothing.</Sign>
           </div>
-          <div className="cfg-block">
-            <label className="cfg-label">How tall are you?</label>
-            <NumField k="heightCm" suffix="cm" />
-            <Sign>Also part of your BMR calculation.</Sign>
-          </div>
+          <HeightField />
           <div className="cfg-block">
             <label className="cfg-label">What do you weigh right now?</label>
             <NumField k="startWeightKg" suffix="kg" />
