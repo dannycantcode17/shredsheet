@@ -33,15 +33,17 @@ export async function askCoach({ messages, context, apiKey, model = 'claude-sonn
   return d.content?.map(c => c.text).join('') || '(no response)'
 }
 
-// Rough meal -> calories estimate. No food database — this leans entirely on
-// the model, so treat it as a ballpark, not a measurement. Returns an integer
-// kcal estimate, or null if it couldn't get a number back.
-export async function estimateCalories({ description, apiKey, model }) {
+// Rough meal -> calories + protein estimate. No food database — this leans
+// entirely on the model, so treat it as a ballpark, not a measurement.
+// Returns { calories, protein } (integers, either may be null if not parsed).
+export async function estimateMeal({ description, apiKey, model }) {
   const context =
     'You are a nutrition estimator inside a fitness tracker. The user describes a meal in plain text. ' +
-    'Reply with ONLY your single best estimate of the total calories as an integer number of kcal — no words, ' +
-    'no units, no range, no explanation. If portion sizes are vague, assume a typical adult portion.'
+    'Reply with ONLY two whole numbers separated by a comma and nothing else: total calories (kcal), then ' +
+    'total protein (grams). Example: 640,38. No words, no units, no thousands separators. If portion sizes ' +
+    'are vague, assume a typical adult portion.'
   const text = await askCoach({ messages: [{ role: 'user', content: String(description || '') }], context, apiKey, model })
-  const m = String(text).replace(/,/g, '').match(/\d{2,5}/)
-  return m ? parseInt(m[0], 10) : null
+  const nums = (String(text).match(/\d{1,5}/g) || []).map(n => parseInt(n, 10))
+  if (!nums.length) return { calories: null, protein: null }
+  return { calories: nums[0] ?? null, protein: nums[1] ?? null }
 }

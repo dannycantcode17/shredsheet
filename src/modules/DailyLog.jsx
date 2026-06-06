@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { useStore } from '../state/store.jsx'
 import { PageHead, Card, Pill, fmt } from '../components/ui.jsx'
-import { estimateCalories } from '../lib/ai.js'
+import { estimateMeal } from '../lib/ai.js'
 
 // today's day-number within the period (1-based), or null if outside it
 function todayDayNum(startDate) {
@@ -21,46 +21,53 @@ function MealEstimator({ day }) {
   const { state, setDailyLog } = useStore()
   const [desc, setDesc] = useState('')
   const [busy, setBusy] = useState(false)
-  const [est, setEst] = useState('')
+  const [kcal, setKcal] = useState('')
+  const [protein, setProtein] = useState('')
   const [err, setErr] = useState('')
+  const got = kcal !== '' || protein !== ''
 
   const run = async () => {
     if (!desc.trim() || busy) return
-    setBusy(true); setErr(''); setEst('')
+    setBusy(true); setErr(''); setKcal(''); setProtein('')
     try {
-      const kcal = await estimateCalories({ description: desc, apiKey: state.apiKey })
-      if (kcal == null) setErr("Couldn't get a number back — check the coach connection in Settings.")
-      else setEst(String(kcal))
+      const r = await estimateMeal({ description: desc, apiKey: state.apiKey })
+      if (r.calories == null && r.protein == null) setErr("Couldn't get an estimate back — check the coach connection in Settings.")
+      else { setKcal(r.calories != null ? String(r.calories) : ''); setProtein(r.protein != null ? String(r.protein) : '') }
     } catch (e) { setErr('Something went wrong: ' + e.message) } finally { setBusy(false) }
   }
   const add = () => {
-    const v = Math.round(parseFloat(est) || 0)
-    if (!v) return
-    const current = parseFloat(state.dailyLog[day]?.calories) || 0
-    setDailyLog(day, { calories: Math.round(current + v) })
-    setEst(''); setDesc('')
+    const kc = Math.round(parseFloat(kcal) || 0)
+    const pr = Math.round(parseFloat(protein) || 0)
+    if (!kc && !pr) return
+    const patch = {}
+    if (kc) patch.calories = Math.round((parseFloat(state.dailyLog[day]?.calories) || 0) + kc)
+    if (pr) patch.protein = Math.round((parseFloat(state.dailyLog[day]?.protein) || 0) + pr)
+    setDailyLog(day, patch)
+    setKcal(''); setProtein(''); setDesc('')
   }
 
   return (
     <Card style={{ marginBottom: 16 }}>
-      <div className="eyebrow">Not sure of the calories?</div>
+      <div className="eyebrow">Not sure of the numbers?</div>
       <p className="muted" style={{ margin: '8px 0 12px', fontSize: 14 }}>
-        Describe what you ate and the coach will estimate it.
+        Describe what you ate and the coach will estimate the calories and protein.
       </p>
       <textarea rows={2} placeholder="e.g. chicken burrito bowl with rice, beans, guac and cheese"
         value={desc} onChange={e => setDesc(e.target.value)} />
       <div className="btn-row" style={{ marginTop: 12 }}>
         <button className="btn primary" onClick={run} disabled={busy || !desc.trim()}>
-          {busy ? 'Estimating…' : 'Estimate calories'}
+          {busy ? 'Estimating…' : 'Estimate'}
         </button>
       </div>
 
       {err && <div style={{ marginTop: 12 }}><Pill tone="bad">{err}</Pill></div>}
-      {est !== '' && (
-        <div style={{ marginTop: 14, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+      {got && (
+        <div style={{ marginTop: 14, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
           <span className="muted" style={{ fontSize: 14 }}>Estimate:</span>
-          <input type="number" style={{ width: 110, textAlign: 'right' }} value={est} onChange={e => setEst(e.target.value)} />
+          <input type="number" style={{ width: 92, textAlign: 'right' }} value={kcal} onChange={e => setKcal(e.target.value)} />
           <span className="faint">kcal</span>
+          <input type="number" style={{ width: 72, textAlign: 'right' }} value={protein} onChange={e => setProtein(e.target.value)} />
+          <span className="faint">g protein</span>
           <button className="btn" onClick={add}>Add to this day</button>
         </div>
       )}
@@ -68,8 +75,8 @@ function MealEstimator({ day }) {
       <div className="divider" />
       <Pill tone="warn">AI estimate — not exact</Pill>
       <p className="faint" style={{ margin: '8px 0 0', fontSize: 12.5, lineHeight: 1.5 }}>
-        It can't see your exact portions, so treat it as a starting point. Tweak the number before adding, or
-        enter your actual calories if you know them.
+        It can't see your exact portions, so treat it as a starting point. Tweak the numbers before adding, or
+        enter your actuals if you know them.
       </p>
     </Card>
   )
