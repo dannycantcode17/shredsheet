@@ -17,7 +17,7 @@ export default function Inputs() {
   const warnGoal = (cut && i.goalWeightKg > i.startWeightKg) || (!cut && i.goalWeightKg < i.startWeightKg)
   return (
     <>
-      <PageHead eyebrow="Setup" title="Inputs" sub="The vitals. Tell us who you are and what you're chasing — the whole sheet recalculates before you've finished typing." />
+      <PageHead eyebrow="Setup" title="Inputs" sub="Your details and your goal. Everything below recalculates as you change them." />
 
       <h2 className="section">General</h2>
       <Card>
@@ -56,14 +56,20 @@ export default function Inputs() {
         </div>
       </Card>
 
-      <h2 className="section">Calculated targets — do not edit</h2>
+      <h2 className="section">Your targets (calculated — no need to edit)</h2>
       <div className="grid cols-3">
-        <StatBox label="Bodyweight change" value={`${fmt(planRes.weightChange, 1, true)} kg`} />
-        <StatBox label="Muscle change" value={`${fmt(planRes.muscleChange, 1, true)} kg`} tone={planRes.muscleChange >= 0 ? 'pos' : 'neg'} />
-        <StatBox label="Fat change" value={`${fmt(planRes.fatChange, 1, true)} kg`} tone={planRes.fatChange <= 0 ? 'pos' : 'neg'} />
-        <StatBox label="Shred cleanliness" value={`${Math.round(planRes.cleanliness * 100)}%`} tone={planRes.cleanliness >= 0.5 ? 'pos' : 'neg'} />
-        <StatBox label="Daily calories" value={`${Math.round(planRes.calorieTarget)} kcal`} rows={[{ k: 'Maintenance (TDEE)', v: `${Math.round(planRes.tdee)} kcal` }]} />
-        <StatBox label={`Daily ${planRes.dailyDelta >= 0 ? 'surplus' : 'deficit'}`} value={`${fmt(planRes.dailyDelta, 0, true)} kcal`} rows={[{ k: 'Protein target', v: `${Math.round(planRes.proteinTarget)} g` }]} />
+        <StatBox label="Total weight change" value={`${fmt(planRes.weightChange, 1, true)} kg`}
+          explain="Your goal weight minus your starting weight — the total change your plan is aiming for over the whole period." />
+        <StatBox label="Of that, muscle" value={`${fmt(planRes.muscleChange, 1, true)} kg`} tone={planRes.muscleChange >= 0 ? 'pos' : 'neg'}
+          explain="How much of that change the plan expects to be muscle, based on your training volume, experience and protein." />
+        <StatBox label="Of that, fat" value={`${fmt(planRes.fatChange, 1, true)} kg`} tone={planRes.fatChange <= 0 ? 'pos' : 'neg'}
+          explain="The rest of the weight change after muscle — i.e. the fat side of the projection (negative means fat lost)." />
+        <StatBox label="Change quality" value={`${Math.round(planRes.cleanliness * 100)}%`} tone={planRes.cleanliness >= 0.5 ? 'pos' : 'neg'}
+          explain="How much of the projected change is the kind you want — fat down on a cut, muscle up on a gain. Higher is cleaner." />
+        <StatBox label="Daily calorie target" value={`${Math.round(planRes.calorieTarget)} kcal`} rows={[{ k: 'Maintenance (TDEE)', v: `${Math.round(planRes.tdee)} kcal` }]}
+          explain="What to eat each day to hit your goal: your maintenance calories (TDEE — what you'd burn at this weight and activity) plus the deficit or surplus the plan needs." />
+        <StatBox label={`Daily ${planRes.dailyDelta >= 0 ? 'surplus' : 'deficit'}`} value={`${fmt(planRes.dailyDelta, 0, true)} kcal`} rows={[{ k: 'Protein target', v: `${Math.round(planRes.proteinTarget)} g` }]}
+          explain="How far above or below maintenance you'll eat each day to reach your goal in time. 'Protein target' is your daily protein goal." />
       </div>
       {planRes.cleanliness < 0.5 && (
         <Card style={{ marginTop: 16, borderColor: 'rgba(240,179,78,0.35)' }}>

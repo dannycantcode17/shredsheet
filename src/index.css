@@ -136,6 +136,9 @@ h2.section { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
 .stat .stat-row { display:flex; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: 13px; }
 .stat .stat-row .k { color: var(--ink-faint); }
 .stat .stat-row .v { font-weight: 600; }
+.stat-explain { margin-top: 12px; padding: 0; border: none; background: none; color: var(--accent); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+.stat-explain:hover { filter: brightness(1.1); }
+.stat-explain-body { margin-top: 8px; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
 .pos { color: var(--good); }
 .neg { color: var(--bad); }
 .accent { color: var(--accent); }
