@@ -87,7 +87,6 @@ body {
   overflow-y: auto;
 }
 .brand { font-weight: 800; font-size: 20px; letter-spacing: -0.02em; margin-bottom: 2px; }
-.brand .dot { color: var(--accent); }
 .brand-sub { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 26px; }
 
 .nav-group-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 18px 0 8px 8px; }
