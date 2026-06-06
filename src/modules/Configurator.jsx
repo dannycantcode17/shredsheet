@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, createContext, useContext } from 'react'
 import { useStore } from '../state/store.jsx'
 import { INTENSITIES, EXPERIENCE } from '../lib/defaults.js'
 
@@ -6,24 +6,33 @@ import { INTENSITIES, EXPERIENCE } from '../lib/defaults.js'
 // THE CONFIGURATOR — gated onboarding flow.
 // Shown on first load (state.onboarded === false). Collects the
 // core inputs, then drops the user into the app. Mobile-first.
+//
+// Fields read/write a local *draft* that starts blank — nothing is
+// pre-selected on fresh entry. Selections persist as you move through
+// the steps and only land in the store (state.inputs) on finish, so
+// untouched keys keep their sensible defaults (start date, modifiers).
 // ============================================================
+
+const DraftCtx = createContext(null)
+const useDraft = () => useContext(DraftCtx)
 
 // little labelled number field used throughout the flow
 function NumField({ k, suffix }) {
-  const { state, setInputs } = useStore()
+  const { draft, update } = useDraft()
   return (
     <div className="cfg-row" style={{ alignItems: 'center' }}>
       <input className="cfg-input" type="number" inputMode="numeric"
-        value={state.inputs[k] ?? ''} onChange={e => setInputs({ [k]: e.target.value })} />
+        value={draft[k] ?? ''} onChange={e => update({ [k]: e.target.value })} />
       {suffix && <span className="faint" style={{ flex: '0 0 auto', fontSize: 14 }}>{suffix}</span>}
     </div>
   )
 }
 
-function SelectField({ k, options }) {
-  const { state, setInputs } = useStore()
+function SelectField({ k, options, placeholder = 'Choose…' }) {
+  const { draft, update } = useDraft()
   return (
-    <select className="cfg-input" value={state.inputs[k]} onChange={e => setInputs({ [k]: e.target.value })}>
+    <select className="cfg-input" value={draft[k] ?? ''} onChange={e => update({ [k]: e.target.value })}>
+      <option value="" disabled>{placeholder}</option>
       {options.map(o => <option key={o}>{o}</option>)}
     </select>
   )
@@ -36,16 +45,16 @@ function Sign({ children }) {
 
 // tappable choice chips — friendlier than a dropdown on a phone
 function ChoiceChips({ k, options, columns }) {
-  const { state, setInputs } = useStore()
+  const { draft, update } = useDraft()
   return (
     <div className={`cfg-choices ${columns === 2 ? 'two' : ''}`}>
       {options.map(o => {
-        const selected = state.inputs[k] === o.value
+        const selected = draft[k] === o.value
         return (
           <button key={o.value} type="button"
             className={`cfg-choice ${selected ? 'selected' : ''}`}
             aria-pressed={selected}
-            onClick={() => setInputs({ [k]: o.value })}>
+            onClick={() => update({ [k]: o.value })}>
             <span className="c-title">{o.title}</span>
             {o.sub && <span className="c-sub">{o.sub}</span>}
           </button>
@@ -63,9 +72,11 @@ const GOAL_CHOICES = [
 ]
 
 export default function Configurator() {
-  const { state, setInputs, setOnboarded, setView } = useStore()
+  const { setInputs, setOnboarded, setView } = useStore()
   const [step, setStep] = useState(0)
-  const i = state.inputs
+  const [draft, setDraft] = useState({}) // starts blank — nothing pre-selected
+  const update = (patch) => setDraft(d => ({ ...d, ...patch }))
+  const i = draft
 
   const steps = [
     // 0 — welcome (cinematic loop hook)
@@ -207,8 +218,8 @@ export default function Configurator() {
         <>
           <h1 className="cfg-q">Your system's built.</h1>
           <p className="cfg-lede">
-            {i.sex}, {i.age} · {i.heightCm}cm · {i.startWeightKg}kg → {i.goalWeightKg}kg.
-            Goal: {i.goal} over {i.periodDays} days.
+            {(i.sex || '—')}, {(i.age || '—')} · {(i.heightCm || '—')}cm · {(i.startWeightKg || '—')}kg → {(i.goalWeightKg || '—')}kg.
+            Goal: {(i.goal || '—')} over {(i.periodDays || '—')} days.
           </p>
           <p className="cfg-lede">Now your coach steps in — they've got everything they need. Tweak any of this later in Settings → Inputs.</p>
         </>
@@ -217,31 +228,42 @@ export default function Configurator() {
   ]
 
   const last = step === steps.length - 1
-  const finish = () => { setOnboarded(true); setView('dashboard') }
+  const finish = () => {
+    // commit only the values the user actually filled in; untouched keys
+    // keep their store defaults (start date, metabolism/muscle modifiers).
+    const filled = Object.fromEntries(
+      Object.entries(draft).filter(([, v]) => v !== '' && v != null)
+    )
+    setInputs(filled)
+    setOnboarded(true)
+    setView('dashboard')
+  }
   const next = () => last ? finish() : setStep(s => s + 1)
   const back = () => setStep(s => Math.max(0, s - 1))
 
   return (
-    <div className="cfg-root app-root">
-      <div className="cfg-shell">
-        <div className="cfg-progress" aria-hidden="true">
-          {steps.map((_, idx) => (
-            <span key={idx} className={`seg ${idx < step ? 'done' : idx === step ? 'active' : ''}`} />
-          ))}
-        </div>
+    <DraftCtx.Provider value={{ draft, update }}>
+      <div className="cfg-root app-root">
+        <div className="cfg-shell">
+          <div className="cfg-progress" aria-hidden="true">
+            {steps.map((_, idx) => (
+              <span key={idx} className={`seg ${idx < step ? 'done' : idx === step ? 'active' : ''}`} />
+            ))}
+          </div>
 
-        <div className="cfg-card" key={step}>
-          <div className="cfg-eyebrow">{steps[step].eyebrow}</div>
-          {steps[step].render()}
-        </div>
+          <div className="cfg-card" key={step}>
+            <div className="cfg-eyebrow">{steps[step].eyebrow}</div>
+            {steps[step].render()}
+          </div>
 
-        <div className="cfg-nav">
-          {step > 0 && <button className="btn back" onClick={back}>←</button>}
-          <button className="btn primary" onClick={next}>
-            {step === 0 ? 'Build my system' : last ? 'Meet your coach' : 'Continue'}
-          </button>
+          <div className="cfg-nav">
+            {step > 0 && <button className="btn back" onClick={back}>←</button>}
+            <button className="btn primary" onClick={next}>
+              {step === 0 ? 'Build my system' : last ? 'Meet your coach' : 'Continue'}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </DraftCtx.Provider>
   )
 }
