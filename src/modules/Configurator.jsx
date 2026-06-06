@@ -35,13 +35,38 @@ export default function Configurator() {
   const i = state.inputs
 
   const steps = [
-    // 0 — welcome
+    // 0 — welcome (cinematic loop hook)
     {
       eyebrow: 'The Shredsheet',
       render: () => (
         <>
-          <h1 className="cfg-q">Let's build your system.</h1>
-          <p className="cfg-lede">A few quick questions and the whole sheet wires itself to you — targets, curves, the lot.</p>
+          <h1 className="cfg-q">Log it. Coach reads it.<br />You get the move.</h1>
+          <div className="cfg-loop">
+            <div className="cfg-loop-step">
+              <div className="l-ico">📝</div>
+              <div>
+                <div className="l-title">You log</div>
+                <div className="l-sub">Yesterday's food, steps and lifts. Ten seconds, done.</div>
+              </div>
+            </div>
+            <div className="cfg-loop-arrow">↓</div>
+            <div className="cfg-loop-step">
+              <div className="l-ico">🧠</div>
+              <div>
+                <div className="l-title">Your coach reads everything</div>
+                <div className="l-sub">Every number, instantly. No squinting at spreadsheets.</div>
+              </div>
+            </div>
+            <div className="cfg-loop-arrow">↓</div>
+            <div className="cfg-loop-step">
+              <div className="l-ico">💡</div>
+              <div>
+                <div className="l-title">You get the insight</div>
+                <div className="l-sub">One clear move for the week ahead. That's the whole game.</div>
+              </div>
+            </div>
+          </div>
+          <p className="cfg-lede">Set it up once and that loop runs for you. Takes about a minute.</p>
         </>
       ),
     },
