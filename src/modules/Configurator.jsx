@@ -132,6 +132,55 @@ const GOAL_CHOICES = [
   { value: 'Aggressive Cut', title: 'Aggressive Cut', sub: 'Fat off, fast' },
 ]
 
+// CONFIGURATOR-LOCAL goal suggestion. Pure UI maths from the draft inputs —
+// deliberately NOT the engine. A realistic weekly rate as a fraction of
+// bodyweight, by goal type, nudged a little by experience. Then projects an
+// endpoint (if a timeframe is set) or a timeframe (if a goal weight is set).
+const WEEKLY_RATE = { 'Aggressive Cut': 0.010, 'Cut': 0.0075, 'Lean Bulk': 0.0025, 'Bulk': 0.005 }
+function goalSuggestion(d) {
+  const startW = parseFloat(d.startWeightKg)
+  const goal = d.goal
+  if (!goal || !startW) return null
+  const isCut = goal === 'Cut' || goal === 'Aggressive Cut'
+  const expMult = d.experience === 'Beginner' ? 1.15 : d.experience === 'Advanced' ? 0.9 : 1
+  const weekly = startW * WEEKLY_RATE[goal] * expMult // kg/week (magnitude)
+  const days = parseFloat(d.periodDays)
+  const goalW = parseFloat(d.goalWeightKg)
+
+  if (days) {
+    const delta = weekly * (days / 7)
+    const endpoint = Math.round(isCut ? startW - delta : startW + delta)
+    const body = isCut
+      ? `A realistic pace is about ${weekly.toFixed(1)}kg/week. Over ${Math.round(days)} days that's roughly ${Math.round(startW)}kg → ${endpoint}kg — and mostly fat, if your protein and training hold up.`
+      : `Muscle comes on slowly: about ${weekly.toFixed(2)}kg/week of mostly lean mass. Over ${Math.round(days)} days that's roughly ${Math.round(startW)}kg → ${endpoint}kg with fat kept in check.`
+    return { head: 'Realistic target', body, action: { label: `Use ${endpoint}kg as my goal`, patch: { goalWeightKg: endpoint } } }
+  }
+  if (goalW) {
+    const needDays = Math.max(7, Math.round((Math.abs(goalW - startW) / weekly) * 7))
+    const body = isCut
+      ? `At a realistic ${weekly.toFixed(1)}kg/week, ${Math.round(startW)}kg → ${Math.round(goalW)}kg takes about ${needDays} days. Rush it and you'll pay in muscle.`
+      : `Lean mass at ~${weekly.toFixed(2)}kg/week means ${Math.round(startW)}kg → ${Math.round(goalW)}kg needs about ${needDays} days for the gain to stay mostly muscle.`
+    return { head: 'Suggested timeframe', body, action: { label: `Use ${needDays} days`, patch: { periodDays: needDays } } }
+  }
+  const body = isCut
+    ? `Aim for about ${weekly.toFixed(1)}kg/week — roughly ${(weekly * 4).toFixed(1)}kg a month, mostly fat. Add a goal weight or timeframe and I'll do the maths.`
+    : `Expect about ${weekly.toFixed(2)}kg/week of lean mass with fat in check. Add a goal weight or timeframe and I'll do the maths.`
+  return { head: 'A realistic pace', body, action: null }
+}
+
+function GoalSuggestion() {
+  const { draft, update } = useDraft()
+  const s = goalSuggestion(draft)
+  if (!s) return null
+  return (
+    <div className="cfg-suggest">
+      <div className="s-head">💡 {s.head}</div>
+      <div className="s-body">{s.body}</div>
+      {s.action && <button type="button" className="btn" onClick={() => update(s.action.patch)}>{s.action.label}</button>}
+    </div>
+  )
+}
+
 export default function Configurator() {
   const { setInputs, setOnboarded, setView } = useStore()
   const [step, setStep] = useState(0)
@@ -221,6 +270,7 @@ export default function Configurator() {
             <NumField k="periodDays" suffix="days" />
             <Sign>Spreads that change across the days — longer means gentler.</Sign>
           </div>
+          <GoalSuggestion />
         </>
       ),
     },
