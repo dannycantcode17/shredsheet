@@ -8,6 +8,7 @@ import BodycompDash from './modules/BodycompDash.jsx'
 import GymDash from './modules/GymDash.jsx'
 import AICoach from './modules/AICoach.jsx'
 import Settings from './modules/Settings.jsx'
+import Configurator from './modules/Configurator.jsx'
 
 const NAV = [
   { group: 'Insights', items: [
@@ -26,7 +27,8 @@ const NAV = [
 ]
 
 export default function App() {
-  const { view, setView } = useStore()
+  const { state, view, setView } = useStore()
+  if (!state.onboarded) return <Configurator />
   const v = view === 'dashboard' ? 'bodycomp' : view
   return (
     <div className="app-root">
