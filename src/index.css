@@ -236,16 +236,8 @@ a { color: var(--accent); }
 }
 
 /* progress rail */
-.cfg-progress { display: flex; gap: 6px; }
-.cfg-progress .seg {
-  height: 4px; flex: 1; border-radius: 999px;
-  background: rgba(255,255,255,0.10);
-  overflow: hidden; transition: background 300ms var(--ease);
-}
-.cfg-progress .seg.done { background: var(--accent); }
-.cfg-progress .seg.active {
-  background: linear-gradient(90deg, var(--accent) 55%, rgba(255,255,255,0.10) 55%);
-}
+.cfg-progress { height: 4px; border-radius: 999px; background: rgba(255,255,255,0.10); overflow: hidden; }
+.cfg-progress .fill { height: 100%; border-radius: 999px; background: var(--accent); transition: width 420ms var(--ease); }
 
 /* the step card */
 .cfg-card {

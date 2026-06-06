@@ -4,8 +4,8 @@ import { INTENSITIES } from '../lib/defaults.js'
 
 // ============================================================
 // THE CONFIGURATOR — gated onboarding flow.
-// Shown on first load (state.onboarded === false). Collects the
-// core inputs, then drops the user into the app. Mobile-first.
+// Shown on first load (state.onboarded === false). One question per
+// screen — eased in, never a wall of inputs. Mobile-first.
 //
 // Fields read/write a local *draft* that starts blank — nothing is
 // pre-selected on fresh entry. Selections persist as you move through
@@ -16,7 +16,7 @@ import { INTENSITIES } from '../lib/defaults.js'
 const DraftCtx = createContext(null)
 const useDraft = () => useContext(DraftCtx)
 
-// little labelled number field used throughout the flow
+// little number field used throughout the flow
 function NumField({ k, suffix }) {
   const { draft, update } = useDraft()
   return (
@@ -25,16 +25,6 @@ function NumField({ k, suffix }) {
         value={draft[k] ?? ''} onChange={e => update({ [k]: e.target.value })} />
       {suffix && <span className="faint" style={{ flex: '0 0 auto', fontSize: 14 }}>{suffix}</span>}
     </div>
-  )
-}
-
-function SelectField({ k, options, placeholder = 'Choose…' }) {
-  const { draft, update } = useDraft()
-  return (
-    <select className="cfg-input" value={draft[k] ?? ''} onChange={e => update({ [k]: e.target.value })}>
-      <option value="" disabled>{placeholder}</option>
-      {options.map(o => <option key={o}>{o}</option>)}
-    </select>
   )
 }
 
@@ -92,13 +82,10 @@ function HeightField() {
   const onIn = (v) => { setInch(v); update({ heightCm: toCm(ft, v) }) }
 
   return (
-    <div className="cfg-block">
-      <div className="row-between" style={{ marginBottom: 9 }}>
-        <label className="cfg-label" style={{ margin: 0 }}>How tall are you?</label>
-        <div className="cfg-seg">
-          <button type="button" className={unit === 'cm' ? 'on' : ''} onClick={() => switchTo('cm')}>cm</button>
-          <button type="button" className={unit === 'ft' ? 'on' : ''} onClick={() => switchTo('ft')}>ft / in</button>
-        </div>
+    <>
+      <div className="cfg-seg" style={{ marginBottom: 12 }}>
+        <button type="button" className={unit === 'cm' ? 'on' : ''} onClick={() => switchTo('cm')}>cm</button>
+        <button type="button" className={unit === 'ft' ? 'on' : ''} onClick={() => switchTo('ft')}>ft / in</button>
       </div>
       {unit === 'cm' ? (
         <div className="cfg-row" style={{ alignItems: 'center' }}>
@@ -121,7 +108,7 @@ function HeightField() {
         </div>
       )}
       <Sign>Part of your BMR calculation.{unit === 'ft' && draft.heightCm ? ` We'll log it as ${draft.heightCm}cm.` : ''}</Sign>
-    </div>
+    </>
   )
 }
 
@@ -130,6 +117,12 @@ const GOAL_CHOICES = [
   { value: 'Lean Bulk', title: 'Lean Bulk', sub: 'Build muscle, keep fat in check' },
   { value: 'Bulk', title: 'Bulk', sub: 'Go for size, accept some fat' },
   { value: 'Aggressive Cut', title: 'Aggressive Cut', sub: 'Fat off, fast' },
+]
+
+const INTENSITY_CHOICES = [
+  { value: 'Relaxed', title: 'Relaxed', sub: 'Steady, plenty in the tank' },
+  { value: 'Moderate', title: 'Moderate', sub: 'Working, but sustainable' },
+  { value: 'Intense', title: 'Intense', sub: 'Hard graft, near the limit' },
 ]
 
 // CONFIGURATOR-LOCAL goal suggestion. Pure UI maths from the draft inputs —
@@ -168,11 +161,24 @@ function goalSuggestion(d) {
   return { head: 'A realistic pace', body, action: null }
 }
 
-// A9 — aesthetic exercise grid. The user taps lifts they've done regularly
+function GoalSuggestion() {
+  const { draft, update } = useDraft()
+  const s = goalSuggestion(draft)
+  if (!s) return null
+  return (
+    <div className="cfg-suggest">
+      <div className="s-head">💡 {s.head}</div>
+      <div className="s-body">{s.body}</div>
+      {s.action && <button type="button" className="btn" onClick={() => update(s.action.patch)}>{s.action.label}</button>}
+    </div>
+  )
+}
+
+// the aesthetic exercise grid. The user taps lifts they've done regularly
 // and we infer training level from the pattern. The big technical compounds
-// count for a bit more. Only the inferred experience reaches the engine.
+// count for a bit more. The selection is persisted for later gym planning.
 const EXERCISE_GRID = [
-  { name: 'Squat', emoji: '🦵', technical: true },
+  { name: 'Squat', emoji: '🏋️', technical: true },
   { name: 'Deadlift', emoji: '🏋️', technical: true },
   { name: 'Bench Press', emoji: '💪', technical: true },
   { name: 'Overhead Press', emoji: '🙆', technical: true },
@@ -203,8 +209,7 @@ function ExerciseGrid() {
     update({ exercisesDone: next, experience: inferExperience(next) })
   }
   return (
-    <div className="cfg-block">
-      <label className="cfg-label">Which of these have you done regularly?</label>
+    <>
       <div className="cfg-grid">
         {EXERCISE_GRID.map(e => {
           const on = selected.includes(e.name)
@@ -221,20 +226,7 @@ function ExerciseGrid() {
           ? `We'll read your training level as ${draft.experience.toLowerCase()} from this — it calibrates how fast we expect strength and muscle to move.`
           : 'Tap everything you train often. We read your training level from the pattern — no need to label yourself.'}
       </Sign>
-    </div>
-  )
-}
-
-function GoalSuggestion() {
-  const { draft, update } = useDraft()
-  const s = goalSuggestion(draft)
-  if (!s) return null
-  return (
-    <div className="cfg-suggest">
-      <div className="s-head">💡 {s.head}</div>
-      <div className="s-body">{s.body}</div>
-      {s.action && <button type="button" className="btn" onClick={() => update(s.action.patch)}>{s.action.label}</button>}
-    </div>
+    </>
   )
 }
 
@@ -245,6 +237,7 @@ export default function Configurator() {
   const update = (patch) => setDraft(d => ({ ...d, ...patch }))
   const i = draft
 
+  // One question per screen. Each step: { eyebrow, render }.
   const steps = [
     // 0 — welcome (cinematic loop hook)
     {
@@ -277,103 +270,162 @@ export default function Configurator() {
               </div>
             </div>
           </div>
-          <p className="cfg-lede">First we build your system — who you are, what you're chasing. Takes about a minute.</p>
+          <p className="cfg-lede">First we build your system — who you are, what you're chasing. One quick question at a time.</p>
           <div className="cfg-signpost"><span className="ico">🔒</span><span>Your coach joins once your system is set — no point coaching a blank sheet.</span></div>
         </>
       ),
     },
-    // 1 — about you
+
+    // — About you (one per screen) —
     {
-      eyebrow: 'About you · 1',
+      eyebrow: 'About you',
       render: () => (
         <>
-          <h1 className="cfg-q">First, the basics.</h1>
-          <div className="cfg-block">
-            <label className="cfg-label">Are you male or female?</label>
-            <ChoiceChips k="sex" columns={2} options={[{ value: 'Male', title: 'Male' }, { value: 'Female', title: 'Female' }]} />
-            <Sign>Shapes your calorie burn and how fast we expect muscle to come on.</Sign>
-          </div>
-          <div className="cfg-block">
-            <label className="cfg-label">How old are you?</label>
-            <NumField k="age" suffix="years" />
-            <Sign>Feeds your metabolism (BMR) — the calories you'd burn doing nothing.</Sign>
-          </div>
-          <HeightField />
-          <div className="cfg-block">
-            <label className="cfg-label">What do you weigh right now?</label>
-            <NumField k="startWeightKg" suffix="kg" />
-            <Sign>The anchor for your calorie target and daily protein goal.</Sign>
-          </div>
+          <h1 className="cfg-q">Are you male or female?</h1>
+          <ChoiceChips k="sex" columns={2} options={[{ value: 'Male', title: 'Male' }, { value: 'Female', title: 'Female' }]} />
+          <Sign>Shapes your calorie burn and how fast we expect muscle to come on.</Sign>
         </>
       ),
     },
-    // 2 — goal
     {
-      eyebrow: 'Your goal · 2',
+      eyebrow: 'About you',
+      render: () => (
+        <>
+          <h1 className="cfg-q">How old are you?</h1>
+          <NumField k="age" suffix="years" />
+          <Sign>Feeds your metabolism (BMR) — the calories you'd burn doing nothing.</Sign>
+        </>
+      ),
+    },
+    {
+      eyebrow: 'About you',
+      render: () => (
+        <>
+          <h1 className="cfg-q">How tall are you?</h1>
+          <HeightField />
+        </>
+      ),
+    },
+    {
+      eyebrow: 'About you',
+      render: () => (
+        <>
+          <h1 className="cfg-q">What do you weigh right now?</h1>
+          <NumField k="startWeightKg" suffix="kg" />
+          <Sign>The anchor for your calorie target and daily protein goal.</Sign>
+        </>
+      ),
+    },
+
+    // — Your goal (one per screen) —
+    {
+      eyebrow: 'Your goal',
       render: () => (
         <>
           <h1 className="cfg-q">What's your goal?</h1>
-          <div className="cfg-block">
-            <ChoiceChips k="goal" options={GOAL_CHOICES} />
-            <Sign>Decides whether we chase fat loss or muscle — and how aggressive your calorie target gets.</Sign>
-          </div>
-          <div className="cfg-block">
-            <label className="cfg-label">What weight are you aiming for?</label>
-            <NumField k="goalWeightKg" suffix="kg" />
-            <Sign>The finish line — sets your total change and daily deficit or surplus.</Sign>
-          </div>
-          <div className="cfg-block">
-            <label className="cfg-label">Over how long?</label>
-            <NumField k="periodDays" suffix="days" />
-            <Sign>Spreads that change across the days — longer means gentler.</Sign>
-          </div>
+          <ChoiceChips k="goal" options={GOAL_CHOICES} />
+          <Sign>Decides whether we chase fat loss or muscle — and how aggressive your calorie target gets.</Sign>
           <GoalSuggestion />
         </>
       ),
     },
-    // 3 — training & activity
     {
-      eyebrow: 'Training · 3',
+      eyebrow: 'Your goal',
       render: () => (
         <>
-          <h1 className="cfg-q">How you train.</h1>
-          <ExerciseGrid />
-          <div className="cfg-block">
-            <label className="cfg-label">Gym sessions / week, last 6 months</label>
-            <NumField k="sessionsLast6m" suffix="/ wk" />
-            <Sign>Drives the 'newbie gains' curve — fewer recent sessions means more room to grow.</Sign>
-          </div>
-          <div className="cfg-block">
-            <label className="cfg-label">Sessions / week you're planning now</label>
-            <NumField k="gymSessionsPerWeek" suffix="/ wk" />
-            <Sign>Helps your coach picture your week ahead.</Sign>
-          </div>
-          <div className="cfg-block">
-            <label className="cfg-label">Cardio</label>
-            <NumField k="cardioMinsPerWeek" suffix="min/wk" />
-            <Sign>Adds to your daily burn (TDEE).</Sign>
-          </div>
-          <div className="cfg-block">
-            <label className="cfg-label">Daily step goal</label>
-            <NumField k="stepGoal" suffix="steps" />
-            <Sign>Also part of your daily burn.</Sign>
-          </div>
-          <div className="cfg-block">
-            <label className="cfg-label">Weight-training intensity</label>
-            <SelectField k="weightIntensity" options={INTENSITIES} />
-            <Sign>Tunes how many calories your lifting burns.</Sign>
-          </div>
-          <div className="cfg-block">
-            <label className="cfg-label">Cardio intensity</label>
-            <SelectField k="cardioIntensity" options={INTENSITIES} />
-            <Sign>Tunes how many calories your cardio burns.</Sign>
-          </div>
+          <h1 className="cfg-q">What weight are you aiming for?</h1>
+          <NumField k="goalWeightKg" suffix="kg" />
+          <Sign>The finish line — sets your total change and daily deficit or surplus.</Sign>
+          <GoalSuggestion />
         </>
       ),
     },
-    // 4 — review (system built -> coach steps in)
     {
-      eyebrow: 'System built · 4',
+      eyebrow: 'Your goal',
+      render: () => (
+        <>
+          <h1 className="cfg-q">Over how long?</h1>
+          <NumField k="periodDays" suffix="days" />
+          <Sign>Spreads that change across the days — longer means gentler.</Sign>
+          <GoalSuggestion />
+        </>
+      ),
+    },
+
+    // — Training (one per screen) —
+    {
+      eyebrow: 'Training',
+      render: () => (
+        <>
+          <h1 className="cfg-q">What do you train?</h1>
+          <ExerciseGrid />
+        </>
+      ),
+    },
+    {
+      eyebrow: 'Training',
+      render: () => (
+        <>
+          <h1 className="cfg-q">Gym sessions a week, lately?</h1>
+          <NumField k="sessionsLast6m" suffix="/ wk" />
+          <Sign>Your average over the last 6 months — drives the 'newbie gains' curve. Fewer recent sessions, more room to grow.</Sign>
+        </>
+      ),
+    },
+    {
+      eyebrow: 'Training',
+      render: () => (
+        <>
+          <h1 className="cfg-q">And how many are you planning now?</h1>
+          <NumField k="gymSessionsPerWeek" suffix="/ wk" />
+          <Sign>Helps your coach picture the week ahead.</Sign>
+        </>
+      ),
+    },
+    {
+      eyebrow: 'Training',
+      render: () => (
+        <>
+          <h1 className="cfg-q">How much cardio a week?</h1>
+          <NumField k="cardioMinsPerWeek" suffix="min/wk" />
+          <Sign>Adds to your daily burn (TDEE). Zero's fine.</Sign>
+        </>
+      ),
+    },
+    {
+      eyebrow: 'Training',
+      render: () => (
+        <>
+          <h1 className="cfg-q">Daily step goal?</h1>
+          <NumField k="stepGoal" suffix="steps" />
+          <Sign>Also part of your daily burn.</Sign>
+        </>
+      ),
+    },
+    {
+      eyebrow: 'Training',
+      render: () => (
+        <>
+          <h1 className="cfg-q">How hard do you lift?</h1>
+          <ChoiceChips k="weightIntensity" options={INTENSITY_CHOICES} />
+          <Sign>Tunes how many calories your lifting burns.</Sign>
+        </>
+      ),
+    },
+    {
+      eyebrow: 'Training',
+      render: () => (
+        <>
+          <h1 className="cfg-q">How hard's your cardio?</h1>
+          <ChoiceChips k="cardioIntensity" options={INTENSITY_CHOICES} />
+          <Sign>Tunes how many calories your cardio burns.</Sign>
+        </>
+      ),
+    },
+
+    // — review (system built -> coach steps in) —
+    {
+      eyebrow: 'System built',
       render: () => (
         <>
           <h1 className="cfg-q">Your system's built.</h1>
@@ -391,10 +443,8 @@ export default function Configurator() {
   const finish = () => {
     // commit only the values the user actually filled in; untouched keys
     // keep their store defaults (start date, metabolism/muscle modifiers).
-    // exercisesDone is a UI-only helper (it infers experience) — not an
-    // engine input, so it never goes into the store.
     const filled = Object.fromEntries(
-      Object.entries(draft).filter(([k, v]) => k !== 'exercisesDone' && v !== '' && v != null)
+      Object.entries(draft).filter(([, v]) => v !== '' && v != null)
     )
     setInputs(filled)
     setOnboarded(true)
@@ -402,15 +452,14 @@ export default function Configurator() {
   }
   const next = () => last ? finish() : setStep(s => s + 1)
   const back = () => setStep(s => Math.max(0, s - 1))
+  const pct = `${(step / (steps.length - 1)) * 100}%`
 
   return (
     <DraftCtx.Provider value={{ draft, update }}>
       <div className="cfg-root app-root">
         <div className="cfg-shell">
           <div className="cfg-progress" aria-hidden="true">
-            {steps.map((_, idx) => (
-              <span key={idx} className={`seg ${idx < step ? 'done' : idx === step ? 'active' : ''}`} />
-            ))}
+            <div className="fill" style={{ width: pct }} />
           </div>
 
           <div className="cfg-card" key={step}>
