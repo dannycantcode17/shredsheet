@@ -174,30 +174,44 @@ function GoalSuggestion() {
   )
 }
 
-// the aesthetic exercise grid. The user taps lifts they've done regularly
-// and we infer training level from the pattern. The big technical compounds
-// count for a bit more. The selection is persisted for later gym planning.
-const EXERCISE_GRID = [
-  { name: 'Squat', emoji: '🏋️', technical: true },
-  { name: 'Deadlift', emoji: '🏋️', technical: true },
-  { name: 'Bench Press', emoji: '💪', technical: true },
-  { name: 'Overhead Press', emoji: '🙆', technical: true },
-  { name: 'Pull-up', emoji: '🧗', technical: true },
-  { name: 'Barbell Row', emoji: '🚣', technical: true },
-  { name: 'Romanian Deadlift', emoji: '🦿', technical: true },
-  { name: 'Hip Thrust', emoji: '🍑', technical: false },
-  { name: 'Lunge', emoji: '🚶', technical: false },
-  { name: 'Lat Pulldown', emoji: '🔽', technical: false },
-  { name: 'Bicep Curl', emoji: '💪', technical: false },
-  { name: 'Lateral Raise', emoji: '✋', technical: false },
+// What do you train? Exercises grouped by equipment type — the user toggles
+// the ones they do regularly. Two jobs: (1) gauge training level from the
+// pattern (the heavy technical compounds count for more), and (2) persist the
+// selection so the gym plan can be built from it later (via the Claude
+// connector). The big barbell lifts + weighted bodyweight read as "technical".
+const EXERCISE_GROUPS = [
+  {
+    label: 'Barbell', emoji: '🏋️',
+    items: ['Back Squat', 'Deadlift', 'Bench Press', 'Overhead Press', 'Barbell Row', 'Romanian Deadlift'],
+    technical: true,
+  },
+  {
+    label: 'Dumbbell', emoji: '🛎️',
+    items: ['DB Bench Press', 'DB Shoulder Press', 'DB Row', 'DB Curl', 'Lateral Raise', 'DB Lunge'],
+    technical: false,
+  },
+  {
+    label: 'Machine & cable', emoji: '⚙️',
+    items: ['Leg Press', 'Lat Pulldown', 'Cable Row', 'Leg Curl', 'Cable Fly', 'Tricep Pushdown'],
+    technical: false,
+  },
+  {
+    label: 'Bodyweight', emoji: '🤸',
+    items: ['Pull-up', 'Chin-up', 'Dip', 'Push-up', 'Hanging Leg Raise', 'Nordic Curl'],
+    technical: false,
+  },
 ]
-const TECHNICAL = new Set(EXERCISE_GRID.filter(e => e.technical).map(e => e.name))
+// heavy compounds that signal a more advanced trainer
+const TECHNICAL = new Set([
+  'Back Squat', 'Deadlift', 'Bench Press', 'Overhead Press', 'Barbell Row', 'Romanian Deadlift',
+  'Pull-up', 'Chin-up', 'Dip', 'Nordic Curl',
+])
 function inferExperience(list) {
   if (!list.length) return ''
   const tech = list.filter(n => TECHNICAL.has(n)).length
   const score = list.length + tech * 0.6
-  if (score <= 3) return 'Beginner'
-  if (score <= 7.5) return 'Intermediate'
+  if (score <= 4) return 'Beginner'
+  if (score <= 10) return 'Intermediate'
   return 'Advanced'
 }
 
@@ -210,21 +224,27 @@ function ExerciseGrid() {
   }
   return (
     <>
-      <div className="cfg-grid">
-        {EXERCISE_GRID.map(e => {
-          const on = selected.includes(e.name)
-          return (
-            <button key={e.name} type="button" className={`cfg-tile ${on ? 'selected' : ''}`}
-              aria-pressed={on} onClick={() => toggle(e.name)}>
-              <span className="emoji">{e.emoji}</span>{e.name}
-            </button>
-          )
-        })}
-      </div>
+      <p className="cfg-lede" style={{ marginBottom: 18 }}>Tap the lifts you do regularly — barbell, dumbbell, machine or bodyweight. This shapes your plan and reads your level.</p>
+      {EXERCISE_GROUPS.map(g => (
+        <div className="cfg-grp" key={g.label}>
+          <div className="cfg-grp-label"><span>{g.emoji}</span>{g.label}</div>
+          <div className="cfg-grid">
+            {g.items.map(name => {
+              const on = selected.includes(name)
+              return (
+                <button key={name} type="button" className={`cfg-tile ${on ? 'selected' : ''}`}
+                  aria-pressed={on} onClick={() => toggle(name)}>
+                  {name}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
       <Sign>
         {draft.experience
-          ? `We'll read your training level as ${draft.experience.toLowerCase()} from this — it calibrates how fast we expect strength and muscle to move.`
-          : 'Tap everything you train often. We read your training level from the pattern — no need to label yourself.'}
+          ? `Reading you as ${draft.experience.toLowerCase()} from this — it tunes how fast we expect strength and muscle to move, and seeds your gym plan.`
+          : 'No need to label yourself — we read your training level from what you pick.'}
       </Sign>
     </>
   )

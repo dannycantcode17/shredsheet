@@ -335,6 +335,12 @@ a { color: var(--accent); }
 .cfg-suggest .btn { margin-top: 12px; }
 
 /* exercise grid (A9) */
+.cfg-grp { margin-bottom: 16px; }
+.cfg-grp-label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-faint); font-weight: 700; margin: 0 0 8px 2px;
+}
 .cfg-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px;
 }
