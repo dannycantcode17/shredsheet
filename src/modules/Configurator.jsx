@@ -29,6 +29,11 @@ function SelectField({ k, options }) {
   )
 }
 
+// transparency signpost — what a field actually changes downstream
+function Sign({ children }) {
+  return <div className="cfg-signpost"><span className="ico">→</span><span>{children}</span></div>
+}
+
 // tappable choice chips — friendlier than a dropdown on a phone
 function ChoiceChips({ k, options, columns }) {
   const { state, setInputs } = useStore()
@@ -108,18 +113,22 @@ export default function Configurator() {
           <div className="cfg-block">
             <label className="cfg-label">Are you male or female?</label>
             <ChoiceChips k="sex" columns={2} options={[{ value: 'Male', title: 'Male' }, { value: 'Female', title: 'Female' }]} />
+            <Sign>Shapes your calorie burn and how fast we expect muscle to come on.</Sign>
           </div>
           <div className="cfg-block">
             <label className="cfg-label">How old are you?</label>
             <NumField k="age" suffix="years" />
+            <Sign>Feeds your metabolism (BMR) — the calories you'd burn doing nothing.</Sign>
           </div>
           <div className="cfg-block">
             <label className="cfg-label">How tall are you?</label>
             <NumField k="heightCm" suffix="cm" />
+            <Sign>Also part of your BMR calculation.</Sign>
           </div>
           <div className="cfg-block">
             <label className="cfg-label">What do you weigh right now?</label>
             <NumField k="startWeightKg" suffix="kg" />
+            <Sign>The anchor for your calorie target and daily protein goal.</Sign>
           </div>
         </>
       ),
@@ -132,14 +141,17 @@ export default function Configurator() {
           <h1 className="cfg-q">What's your goal?</h1>
           <div className="cfg-block">
             <ChoiceChips k="goal" options={GOAL_CHOICES} />
+            <Sign>Decides whether we chase fat loss or muscle — and how aggressive your calorie target gets.</Sign>
           </div>
           <div className="cfg-block">
             <label className="cfg-label">What weight are you aiming for?</label>
             <NumField k="goalWeightKg" suffix="kg" />
+            <Sign>The finish line — sets your total change and daily deficit or surplus.</Sign>
           </div>
           <div className="cfg-block">
             <label className="cfg-label">Over how long?</label>
             <NumField k="periodDays" suffix="days" />
+            <Sign>Spreads that change across the days — longer means gentler.</Sign>
           </div>
         </>
       ),
@@ -153,30 +165,37 @@ export default function Configurator() {
           <div className="cfg-block">
             <label className="cfg-label">Training experience</label>
             <SelectField k="experience" options={EXPERIENCE} />
+            <Sign>Calibrates how quickly we expect your strength and muscle to move.</Sign>
           </div>
           <div className="cfg-block">
-            <label className="cfg-label">Gym sessions / week (last 6 months)</label>
-            <NumField k="sessionsLast6m" />
+            <label className="cfg-label">Gym sessions / week, last 6 months</label>
+            <NumField k="sessionsLast6m" suffix="/ wk" />
+            <Sign>Drives the 'newbie gains' curve — fewer recent sessions means more room to grow.</Sign>
           </div>
           <div className="cfg-block">
-            <label className="cfg-label">Gym sessions / week (planned)</label>
-            <NumField k="gymSessionsPerWeek" />
+            <label className="cfg-label">Sessions / week you're planning now</label>
+            <NumField k="gymSessionsPerWeek" suffix="/ wk" />
+            <Sign>Helps your coach picture your week ahead.</Sign>
           </div>
           <div className="cfg-block">
             <label className="cfg-label">Cardio</label>
             <NumField k="cardioMinsPerWeek" suffix="min/wk" />
+            <Sign>Adds to your daily burn (TDEE).</Sign>
           </div>
           <div className="cfg-block">
             <label className="cfg-label">Daily step goal</label>
-            <NumField k="stepGoal" />
+            <NumField k="stepGoal" suffix="steps" />
+            <Sign>Also part of your daily burn.</Sign>
           </div>
           <div className="cfg-block">
             <label className="cfg-label">Weight-training intensity</label>
             <SelectField k="weightIntensity" options={INTENSITIES} />
+            <Sign>Tunes how many calories your lifting burns.</Sign>
           </div>
           <div className="cfg-block">
             <label className="cfg-label">Cardio intensity</label>
             <SelectField k="cardioIntensity" options={INTENSITIES} />
+            <Sign>Tunes how many calories your cardio burns.</Sign>
           </div>
         </>
       ),
