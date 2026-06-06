@@ -7,6 +7,8 @@ import { ResponsiveContainer, LineChart, Line, ComposedChart, Bar, XAxis, YAxis,
 const axis = { stroke: 'rgba(244,244,245,0.4)', fontSize: 11 }
 const tip = { background: '#0f1c33', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, fontSize: 12 }
 const grid = 'rgba(255,255,255,0.06)'
+// cap tooltip values to ≤2 dp (drops trailing zeros) — no long float tails
+const tipFmt = (v) => (v == null || Number.isNaN(Number(v)) ? '–' : Number(Number(v).toFixed(2)))
 
 export default function BodycompDash() {
   const { state, planRes, daily } = useStore()
@@ -33,7 +35,7 @@ export default function BodycompDash() {
           <div className="eyebrow">Shred Curve · Fat (loss shown positive)</div>
           <div className="chart-wrap"><ResponsiveContainer>
             <LineChart data={curve} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-              <CartesianGrid stroke={grid} /><XAxis dataKey="day" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} />
+              <CartesianGrid stroke={grid} /><XAxis dataKey="day" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} formatter={tipFmt} />
               <ReferenceLine x={lastLogged || null} stroke="rgba(255,255,255,0.35)" strokeDasharray="4 4" />
               <Line type="monotone" dataKey="fatTarget" stroke="#5aa9ff" strokeDasharray="5 5" dot={false} strokeWidth={2} />
               <Line type="monotone" dataKey="fatActual" stroke="#5aa9ff" dot={false} strokeWidth={2.5} connectNulls />
@@ -45,7 +47,7 @@ export default function BodycompDash() {
           <div className="eyebrow">Shred Curve · Muscle</div>
           <div className="chart-wrap"><ResponsiveContainer>
             <LineChart data={curve} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-              <CartesianGrid stroke={grid} /><XAxis dataKey="day" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} />
+              <CartesianGrid stroke={grid} /><XAxis dataKey="day" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} formatter={tipFmt} />
               <ReferenceLine x={lastLogged || null} stroke="rgba(255,255,255,0.35)" strokeDasharray="4 4" />
               <Line type="monotone" dataKey="muscleTarget" stroke="#57e08b" strokeDasharray="5 5" dot={false} strokeWidth={2} />
               <Line type="monotone" dataKey="muscleActual" stroke="#57e08b" dot={false} strokeWidth={2.5} connectNulls />
@@ -69,7 +71,7 @@ export default function BodycompDash() {
       <Card>
         <div className="chart-wrap"><ResponsiveContainer>
           <ComposedChart data={calData} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-            <CartesianGrid stroke={grid} /><XAxis dataKey="day" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} />
+            <CartesianGrid stroke={grid} /><XAxis dataKey="day" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} formatter={tipFmt} />
             <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" />
             <Bar dataKey="Balance" fill="#57e08b" opacity={0.55} />
             <Line type="monotone" dataKey="TDEE" stroke="#f06fa8" dot={false} strokeWidth={2.5} />
