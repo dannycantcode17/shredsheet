@@ -227,6 +227,23 @@ select option { background: #0f1c33; }
 .dl-row input { width: 130px; text-align: right; }
 .dl-val { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .dl-subhead { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; margin: 20px 0 2px; }
+
+/* Gym Plan — vertical day cards */
+.gp-day { margin-bottom: 14px; }
+.gp-day-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.gp-day-name { font-weight: 700; font-size: 16px; }
+.gp-ex { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.gp-ex:last-child { border-bottom: none; }
+.gp-ex-top { display: flex; align-items: center; gap: 8px; }
+.gp-ex-name { font-size: 15px; }
+.gp-x { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--line-strong); background: rgba(255,255,255,0.04); color: var(--ink-soft); cursor: pointer; }
+.gp-x:hover { border-color: var(--bad); color: var(--bad); }
+.gp-ex-fields { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-top: 10px; }
+.gp-f { display: flex; flex-direction: column; gap: 4px; }
+.gp-f span { font-size: 11px; color: var(--ink-faint); letter-spacing: 0.04em; }
+.gp-f input { width: 80px; text-align: center; padding: 9px; }
+.gp-tag { align-self: flex-end; border: 1px solid var(--line-strong); background: rgba(255,255,255,0.04); color: var(--ink-soft); font: inherit; font-size: 12px; font-weight: 600; padding: 10px 13px; border-radius: 10px; cursor: pointer; }
+.gp-tag.on { border-color: var(--accent); background: rgba(90,209,199,0.14); color: #d7fbf6; }
 .legend .key { display:inline-flex; align-items:center; gap: 7px; }
 .swatch { width: 12px; height: 3px; border-radius: 2px; display:inline-block; }
 
