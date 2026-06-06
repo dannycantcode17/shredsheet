@@ -30,12 +30,15 @@ export default function AICoach() {
   return (
     <>
       <PageHead eyebrow="Insights" title="AI Coach" sub="Your coach can see everything in your sheet — your plan, your logs, your progress. Ask anything." />
-      <div className="row-between" style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 14 }}>
         <div className="btn-row">
           <button className="btn primary" onClick={() => send('Analyse my data: what is working, what is not, and the single most important change I should make this week?')} disabled={busy}>Analyse my data</button>
+          <button className="btn" onClick={() => send("What's the single most important thing I should focus on this week, and why?")} disabled={busy}>What should I focus on this week?</button>
           <button className="btn" onClick={() => send('In two lines, am I on track for my goal?')} disabled={busy}>Am I on track?</button>
+          <button className="btn" onClick={() => send('Explain my key numbers in plain English — what they mean and how they relate to each other.')} disabled={busy}>Explain my numbers</button>
+          <button className="btn" onClick={() => send('Based on my data, what adjustments to my plan would you suggest, if any?')} disabled={busy}>Adjust my plan</button>
         </div>
-        <button className="btn ghost" onClick={copyPrompt}>Copy full prompt</button>
+        <div style={{ marginTop: 10 }}><button className="btn ghost" onClick={copyPrompt}>Copy full prompt</button></div>
       </div>
       <Card>
         <div className="chat-log" ref={logRef}>
