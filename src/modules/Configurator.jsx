@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
-import { GOALS, INTENSITIES, EXPERIENCE } from '../lib/defaults.js'
+import { INTENSITIES, EXPERIENCE } from '../lib/defaults.js'
 
 // ============================================================
 // THE CONFIGURATOR — gated onboarding flow.
@@ -28,6 +28,34 @@ function SelectField({ k, options }) {
     </select>
   )
 }
+
+// tappable choice chips — friendlier than a dropdown on a phone
+function ChoiceChips({ k, options, columns }) {
+  const { state, setInputs } = useStore()
+  return (
+    <div className={`cfg-choices ${columns === 2 ? 'two' : ''}`}>
+      {options.map(o => {
+        const selected = state.inputs[k] === o.value
+        return (
+          <button key={o.value} type="button"
+            className={`cfg-choice ${selected ? 'selected' : ''}`}
+            aria-pressed={selected}
+            onClick={() => setInputs({ [k]: o.value })}>
+            <span className="c-title">{o.title}</span>
+            {o.sub && <span className="c-sub">{o.sub}</span>}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+const GOAL_CHOICES = [
+  { value: 'Cut', title: 'Cut', sub: 'Drop fat, hold onto muscle' },
+  { value: 'Lean Bulk', title: 'Lean Bulk', sub: 'Build muscle, keep fat in check' },
+  { value: 'Bulk', title: 'Bulk', sub: 'Go for size, accept some fat' },
+  { value: 'Aggressive Cut', title: 'Aggressive Cut', sub: 'Fat off, fast' },
+]
 
 export default function Configurator() {
   const { state, setInputs, setOnboarded, setView } = useStore()
@@ -78,19 +106,19 @@ export default function Configurator() {
         <>
           <h1 className="cfg-q">First, the basics.</h1>
           <div className="cfg-block">
-            <label className="cfg-label">Sex</label>
-            <SelectField k="sex" options={['Male', 'Female']} />
+            <label className="cfg-label">Are you male or female?</label>
+            <ChoiceChips k="sex" columns={2} options={[{ value: 'Male', title: 'Male' }, { value: 'Female', title: 'Female' }]} />
           </div>
           <div className="cfg-block">
-            <label className="cfg-label">Age</label>
-            <NumField k="age" />
+            <label className="cfg-label">How old are you?</label>
+            <NumField k="age" suffix="years" />
           </div>
           <div className="cfg-block">
-            <label className="cfg-label">Height</label>
+            <label className="cfg-label">How tall are you?</label>
             <NumField k="heightCm" suffix="cm" />
           </div>
           <div className="cfg-block">
-            <label className="cfg-label">Starting weight</label>
+            <label className="cfg-label">What do you weigh right now?</label>
             <NumField k="startWeightKg" suffix="kg" />
           </div>
         </>
@@ -101,13 +129,12 @@ export default function Configurator() {
       eyebrow: 'Your goal · 2',
       render: () => (
         <>
-          <h1 className="cfg-q">What are you here to do?</h1>
+          <h1 className="cfg-q">What's your goal?</h1>
           <div className="cfg-block">
-            <label className="cfg-label">Primary goal</label>
-            <SelectField k="goal" options={GOALS} />
+            <ChoiceChips k="goal" options={GOAL_CHOICES} />
           </div>
           <div className="cfg-block">
-            <label className="cfg-label">Goal weight</label>
+            <label className="cfg-label">What weight are you aiming for?</label>
             <NumField k="goalWeightKg" suffix="kg" />
           </div>
           <div className="cfg-block">
