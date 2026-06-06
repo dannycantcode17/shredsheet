@@ -8,7 +8,7 @@ export default function GymPlan() {
   const updateName = (di, name) => setPlan(state.plan.map((d, idx) => idx !== di ? d : { ...d, name }))
   return (
     <>
-      <PageHead eyebrow="Setup · 2" title="Gym Plan" sub="Define your training days. Name a day to activate it. Add goal weight + reps for your key lifts to set strength targets." />
+      <PageHead eyebrow="Setup · 2" title="Gym Plan" sub="Build your split. Name a day to wake it up, then load it with lifts. Drop goal weight + reps on your big movers and you've got yourself some targets to chase." />
       <div style={{ marginBottom: 18 }}><Pill tone="muted">{planRes.plannedSets} planned sets across the split</Pill></div>
       {state.plan.map((day, di) => (
         <Card key={di} style={{ marginBottom: 16 }}>

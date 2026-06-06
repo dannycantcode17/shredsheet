@@ -17,7 +17,7 @@ export default function Inputs() {
   const warnGoal = (cut && i.goalWeightKg > i.startWeightKg) || (!cut && i.goalWeightKg < i.startWeightKg)
   return (
     <>
-      <PageHead eyebrow="Setup · 1" title="Inputs" sub="Tell the Shredsheet who you are and what you're chasing. Everything downstream recalculates live." />
+      <PageHead eyebrow="Setup · 1" title="Inputs" sub="The vitals. Tell us who you are and what you're chasing — the whole sheet recalculates before you've finished typing." />
 
       <h2 className="section">General</h2>
       <Card>

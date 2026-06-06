@@ -33,7 +33,7 @@ export default function App() {
       <div className="shell">
         <aside className="sidebar">
           <div className="brand">THE SHRED<span className="dot">·</span>SHEET</div>
-          <div className="brand-sub">smarter, not harder</div>
+          <div className="brand-sub">less faff, more gains</div>
           {NAV.map(g => (
             <div key={g.group}>
               <div className="nav-group-label">{g.group}</div>

@@ -13,7 +13,7 @@ export default function WorkoutLog() {
   const del = (i) => setWorkoutLog(log.filter((_, j) => j !== i))
   return (
     <>
-      <PageHead eyebrow="Log · 4" title="Workout Log" sub="One row per set. The detail powers volume, calorie burn, muscle and strength tracking." />
+      <PageHead eyebrow="Log · 4" title="Workout Log" sub="One row per set — yes, every set. This is where your gains start keeping receipts: volume, calories torched, muscle and strength all trace back here." />
       <Card>
         <div style={{ overflowX: 'auto' }}>
           <table className="tbl">
@@ -34,7 +34,7 @@ export default function WorkoutLog() {
                   <td><button className="btn ghost" style={{ padding: '4px 8px' }} onClick={() => del(i)}>✕</button></td>
                 </tr>
               ))}
-              {!log.length && <tr><td colSpan={9} className="faint" style={{ padding: 18 }}>No sets logged yet.</td></tr>}
+              {!log.length && <tr><td colSpan={9} className="faint" style={{ padding: 18 }}>Nothing here yet. Go lift something, then come brag about it.</td></tr>}
             </tbody>
           </table>
         </div>

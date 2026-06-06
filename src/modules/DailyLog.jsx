@@ -11,7 +11,7 @@ export default function DailyLog() {
   )
   return (
     <>
-      <PageHead eyebrow="Log · 3" title="Daily Log" sub="Your daily journal. Log yesterday's numbers. Calculated columns update as you go." />
+      <PageHead eyebrow="Log · 3" title="Daily Log" sub="Yesterday, by the numbers. Punch in what you ate, walked and weighed — the maths does its own homework in the calculated columns." />
       <Card>
         <div style={{ overflowX: 'auto' }}>
           <table className="tbl">
