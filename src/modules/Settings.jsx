@@ -4,7 +4,7 @@ import { PageHead, Card, Field, Pill } from '../components/ui.jsx'
 import { exportState, importState } from '../lib/storage.js'
 
 export default function Settings() {
-  const { state, setApiKey, replaceState, reset } = useStore()
+  const { state, setApiKey, replaceState, reset, setOnboarded } = useStore()
   const fileRef = useRef()
   return (
     <>
@@ -15,6 +15,13 @@ export default function Settings() {
           <input type="password" placeholder="sk-ant-..." value={state.apiKey} onChange={e => setApiKey(e.target.value)} />
         </Field>
         {state.apiKey ? <Pill tone="good">Key set — coach will work in this browser</Pill> : <Pill tone="muted">No key — coach uses the deployed server proxy</Pill>}
+      </Card>
+      <h2 className="section">Setup</h2>
+      <Card>
+        <div className="row-between">
+          <span className="muted" style={{ fontSize: 14 }}>Fancy another run through the configurator? Your data stays put — nothing's wiped.</span>
+          <button className="btn" onClick={() => setOnboarded(false)}>↻ Re-run setup</button>
+        </div>
       </Card>
       <h2 className="section">Your data</h2>
       <Card>
