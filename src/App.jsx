@@ -24,7 +24,7 @@ const NAV = [
   { group: 'Log', items: [
     { key: 'food', label: 'Food' },
     { key: 'workout', label: 'Workout Log' },
-    { key: 'daily', label: 'Daily Log' },
+    { key: 'daily', label: 'Daily' },
   ]},
 ]
 
