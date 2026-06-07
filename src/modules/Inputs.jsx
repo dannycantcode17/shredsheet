@@ -1,6 +1,6 @@
 import React from 'react'
 import { useStore } from '../state/store.jsx'
-import { PageHead, Card, Field, StatBox, Pill, fmt } from '../components/ui.jsx'
+import { PageHead, Card, Field, StatBox, Pill, fmt, GOAL_LABEL } from '../components/ui.jsx'
 import { GOALS, INTENSITIES, EXPERIENCE } from '../lib/defaults.js'
 
 const Num = ({ k }) => { const { state, setInputs } = useStore(); return (
@@ -37,7 +37,7 @@ export default function Inputs() {
       <Card>
         <div className="grid cols-3">
           <Field label="Goal weight (kg)"><Num k="goalWeightKg" /></Field>
-          <Field label="Primary goal"><select value={i.goal} onChange={e => setInputs({ goal: e.target.value })}>{GOALS.map(x => <option key={x}>{x}</option>)}</select></Field>
+          <Field label="Primary goal"><select value={i.goal} onChange={e => setInputs({ goal: e.target.value })}>{GOALS.map(x => <option key={x} value={x}>{GOAL_LABEL[x] || x}</option>)}</select></Field>
           <Field label="Gym sessions / week"><Num k="gymSessionsPerWeek" /></Field>
           <Field label="Cardio (mins / week)"><Num k="cardioMinsPerWeek" /></Field>
           <Field label="Step goal / day"><Num k="stepGoal" /></Field>
@@ -45,7 +45,7 @@ export default function Inputs() {
           <Field label="Weight-training intensity"><select value={i.weightIntensity} onChange={e => setInputs({ weightIntensity: e.target.value })}>{INTENSITIES.map(x => <option key={x}>{x}</option>)}</select></Field>
           <Field label="Cardio intensity"><select value={i.cardioIntensity} onChange={e => setInputs({ cardioIntensity: e.target.value })}>{INTENSITIES.map(x => <option key={x}>{x}</option>)}</select></Field>
         </div>
-        {warnGoal && <Pill tone="warn">⚠ {cut ? 'Cut selected but goal weight is above your start' : 'Bulk selected but goal weight is below your start'}</Pill>}
+        {warnGoal && <Pill tone="warn">⚠ {cut ? 'Your goal is fat loss, but your target weight is above your current weight' : 'Your goal is muscle gain, but your target weight is below your current weight'}</Pill>}
       </Card>
 
       <h2 className="section">Manual logic modifiers <span className="faint" style={{ textTransform: 'none', letterSpacing: 0 }}>— your override on the model (100% = average)</span></h2>

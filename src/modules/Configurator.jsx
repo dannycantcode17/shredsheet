@@ -1,6 +1,7 @@
 import React, { useState, createContext, useContext } from 'react'
 import { useStore } from '../state/store.jsx'
 import { INTENSITIES } from '../lib/defaults.js'
+import { GOAL_LABEL, GOAL_SUB } from '../components/ui.jsx'
 
 // ============================================================
 // THE CONFIGURATOR — gated onboarding flow.
@@ -114,12 +115,10 @@ function HeightField() {
   )
 }
 
-const GOAL_CHOICES = [
-  { value: 'Cut', title: 'Cut', sub: 'Drop fat, hold onto muscle' },
-  { value: 'Lean Bulk', title: 'Lean Bulk', sub: 'Build muscle, keep fat in check' },
-  { value: 'Bulk', title: 'Bulk', sub: 'Go for size, accept some fat' },
-  { value: 'Aggressive Cut', title: 'Aggressive Cut', sub: 'Fat off, fast' },
-]
+// Display order is fat-loss -> muscle; value stays the engine key.
+const GOAL_CHOICES = ['Cut', 'Aggressive Cut', 'Lean Bulk', 'Bulk'].map(v => ({
+  value: v, title: GOAL_LABEL[v], sub: GOAL_SUB[v],
+}))
 
 const INTENSITY_CHOICES = [
   { value: 'Relaxed', title: 'Relaxed', sub: 'Steady, plenty in the tank' },
@@ -146,20 +145,20 @@ function goalSuggestion(d) {
     const delta = weekly * (days / 7)
     const endpoint = Math.round(isCut ? startW - delta : startW + delta)
     const body = isCut
-      ? `A realistic pace is about ${weekly.toFixed(1)}kg/week. Over ${Math.round(days)} days that's roughly ${Math.round(startW)}kg → ${endpoint}kg — and mostly fat, if your protein and training hold up.`
-      : `Muscle comes on slowly: about ${weekly.toFixed(2)}kg/week of mostly lean mass. Over ${Math.round(days)} days that's roughly ${Math.round(startW)}kg → ${endpoint}kg with fat kept in check.`
-    return { head: 'Realistic target', body, action: { label: `Use ${endpoint}kg as my goal`, patch: { goalWeightKg: endpoint } } }
+      ? `At a steady ${weekly.toFixed(1)}kg/week, ${Math.round(startW)}kg over ${Math.round(days)} days lands around ${endpoint}kg — mostly fat, if your protein and training stay consistent.`
+      : `Muscle builds slowly — about ${weekly.toFixed(2)}kg/week. Over ${Math.round(days)} days that's roughly ${Math.round(startW)}kg to ${endpoint}kg, with fat kept in check.`
+    return { head: 'A realistic target', body, action: { label: `Use ${endpoint}kg as my target`, patch: { goalWeightKg: endpoint } } }
   }
   if (goalW) {
     const needDays = Math.max(7, Math.round((Math.abs(goalW - startW) / weekly) * 7))
     const body = isCut
-      ? `At a realistic ${weekly.toFixed(1)}kg/week, ${Math.round(startW)}kg → ${Math.round(goalW)}kg takes about ${needDays} days. Rush it and you'll pay in muscle.`
-      : `Lean mass at ~${weekly.toFixed(2)}kg/week means ${Math.round(startW)}kg → ${Math.round(goalW)}kg needs about ${needDays} days for the gain to stay mostly muscle.`
+      ? `At a steady ${weekly.toFixed(1)}kg/week, ${Math.round(startW)}kg to ${Math.round(goalW)}kg takes about ${needDays} days. A steadier pace helps protect your muscle.`
+      : `At about ${weekly.toFixed(2)}kg/week of lean mass, ${Math.round(startW)}kg to ${Math.round(goalW)}kg takes roughly ${needDays} days.`
     return { head: 'Suggested timeframe', body, action: { label: `Use ${needDays} days`, patch: { periodDays: needDays } } }
   }
   const body = isCut
-    ? `Aim for about ${weekly.toFixed(1)}kg/week — roughly ${(weekly * 4).toFixed(1)}kg a month, mostly fat. Add a goal weight or timeframe and I'll do the maths.`
-    : `Expect about ${weekly.toFixed(2)}kg/week of lean mass with fat in check. Add a goal weight or timeframe and I'll do the maths.`
+    ? `A steady pace is about ${weekly.toFixed(1)}kg/week — roughly ${(weekly * 4).toFixed(1)}kg a month, mostly fat. Add a target weight or timeframe for a full projection.`
+    : `Expect about ${weekly.toFixed(2)}kg/week of lean mass with fat in check. Add a target weight or timeframe for a full projection.`
   return { head: 'A realistic pace', body, action: null }
 }
 
@@ -412,39 +411,26 @@ export default function Configurator() {
       ),
     },
 
-    // — Your goal (one per screen) —
+    // — Your goal (all on one screen) —
     {
       eyebrow: 'Your goal',
-      requires: 'goal',
+      requires: ['goal', 'goalWeightKg', 'periodDays'],
       render: () => (
         <>
-          <h1 className="cfg-q">What's your goal?</h1>
-          <ChoiceChips k="goal" options={GOAL_CHOICES} />
-          <Sign>Decides whether we chase fat loss or muscle — and how aggressive your calorie target gets.</Sign>
-          <GoalSuggestion />
-        </>
-      ),
-    },
-    {
-      eyebrow: 'Your goal',
-      requires: 'goalWeightKg',
-      render: () => (
-        <>
-          <h1 className="cfg-q">What weight are you aiming for?</h1>
-          <NumField k="goalWeightKg" suffix="kg" />
-          <Sign>The finish line — sets your total change and daily deficit or surplus.</Sign>
-          <GoalSuggestion />
-        </>
-      ),
-    },
-    {
-      eyebrow: 'Your goal',
-      requires: 'periodDays',
-      render: () => (
-        <>
-          <h1 className="cfg-q">Over how long?</h1>
-          <NumField k="periodDays" suffix="days" />
-          <Sign>Spreads that change across the days — longer means gentler.</Sign>
+          <h1 className="cfg-q">What are you aiming for?</h1>
+          <div className="cfg-block">
+            <label className="cfg-label">Your goal</label>
+            <ChoiceChips k="goal" options={GOAL_CHOICES} />
+            <Sign>Sets whether we focus on losing fat or building muscle, and how your calorie target is shaped.</Sign>
+          </div>
+          <div className="cfg-block">
+            <label className="cfg-label">Target weight</label>
+            <NumField k="goalWeightKg" suffix="kg" />
+          </div>
+          <div className="cfg-block">
+            <label className="cfg-label">Over how long?</label>
+            <NumField k="periodDays" suffix="days" />
+          </div>
           <GoalSuggestion />
         </>
       ),
@@ -547,7 +533,7 @@ export default function Configurator() {
           <h1 className="cfg-q">Your system's built.</h1>
           <p className="cfg-lede">
             {(i.sex || '—')}, {(i.age || '—')} · {(i.heightCm || '—')}cm · {(i.startWeightKg || '—')}kg → {(i.goalWeightKg || '—')}kg.
-            Goal: {(i.goal || '—')} over {(i.periodDays || '—')} days.
+            Goal: {(i.goal ? GOAL_LABEL[i.goal] : '—')} over {(i.periodDays || '—')} days.
           </p>
           <p className="cfg-lede">Now your coach steps in — they've got everything they need. Tweak any of this later in Settings → Inputs.</p>
         </>
@@ -566,7 +552,8 @@ export default function Configurator() {
     setOnboarded(true)
     setView('dashboard')
   }
-  const stepOk = !steps[step].requires || isFilled(draft, steps[step].requires)
+  const req = steps[step].requires
+  const stepOk = !req || (Array.isArray(req) ? req.every(k => isFilled(draft, k)) : isFilled(draft, req))
   const next = () => { if (!stepOk) return; last ? finish() : setStep(s => s + 1) }
   const back = () => setStep(s => Math.max(0, s - 1))
   const pct = `${(step / (steps.length - 1)) * 100}%`
