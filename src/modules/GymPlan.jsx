@@ -11,7 +11,7 @@ const isDefaultPlan = (plan) => plan.length === DEFAULT_PLAN.length && plan.ever
 // (happy with the split? -> happy with the exercises?), then confirmed/locked
 // into a read-only plan. Days scroll sideways. Plan data + engine unchanged.
 export default function GymPlan() {
-  const { state, setPlan, setPlanLocked, setPlanGenerated, planRes } = useStore()
+  const { state, setPlan, setPlanLocked, setPlanGenerated, setActiveSession, setView, planRes } = useStore()
   const { plan, planLocked, planGenerated, inputs, apiKey } = state
   const [busy, setBusy] = useState(false)
   const [stage, setStage] = useState('split') // split -> exercises -> (locked)
@@ -46,6 +46,7 @@ export default function GymPlan() {
   const setEx = (di, ei, patch) => setPlan(plan.map((d, i) => i !== di ? d : { ...d, exercises: d.exercises.map((e, j) => j !== ei ? e : { ...e, ...patch }) }))
   const addEx = (di) => setPlan(plan.map((d, i) => i !== di ? d : { ...d, exercises: [...d.exercises, { name: '', compound: false, sets: '', goalWeight: '', goalReps: '' }] }))
   const removeEx = (di, ei) => setPlan(plan.map((d, i) => i !== di ? d : { ...d, exercises: d.exercises.filter((_, j) => j !== ei) }))
+  const startWorkout = (d) => { setActiveSession({ day: d.name, exercises: d.exercises.filter(e => e.name) }); setView('workout') }
 
   return (
     <>
@@ -59,10 +60,23 @@ export default function GymPlan() {
             <Pill tone="good">Plan locked</Pill>
             <button className="btn" onClick={() => { setPlanLocked(false); setStage('exercises') }}>Unlock to edit</button>
           </div>
+
+          <Card className="gp-howto" style={{ marginBottom: 14 }}>
+            <div className="eyebrow">You're set — here's the routine</div>
+            <ol className="gp-steps">
+              <li><b>Train.</b> On a gym day, tap <b>Start</b> on that day below — your sets are pre-filled, just enter what you lifted.</li>
+              <li><b>Eat.</b> Log your food each day so calories and protein track against your target.</li>
+              <li><b>Check in.</b> Your dashboards and AI coach update as you go — ask the coach anything.</li>
+            </ol>
+          </Card>
+
           <div className="gp-scroll">
             {days.map((d) => (
               <Card key={d.name} className="gp-day">
-                <div className="gp-day-head"><span className="gp-day-name" style={{ fontWeight: 700, fontSize: 16 }}>{d.name}</span></div>
+                <div className="gp-day-head">
+                  <span className="gp-day-name" style={{ fontWeight: 700, fontSize: 16 }}>{d.name}</span>
+                  <button className="btn primary gp-start" onClick={() => startWorkout(d)}>Start</button>
+                </div>
                 {d.exercises.filter(e => e.name).map((e, ei) => (
                   <div className="gp-ro-ex" key={ei}>
                     <span className="gp-ro-name">{e.name}</span>

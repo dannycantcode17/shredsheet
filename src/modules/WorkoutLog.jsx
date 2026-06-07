@@ -1,84 +1,133 @@
 import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
-import { PageHead, Card, Field } from '../components/ui.jsx'
+import { PageHead, Card } from '../components/ui.jsx'
 import { epley1RM } from '../lib/engine.js'
 
 const ddmm = (iso) => { if (!iso) return ''; const [, m, d] = iso.split('-'); return `${d}/${m}` }
 
-// Phone-first logging: a quick entry card at the top, then your recent sets as
-// a list grouped by date. Same workoutLog data model and 1RM maths as before.
-export default function WorkoutLog() {
-  const { state, setWorkoutLog } = useStore()
-  const log = state.workoutLog
-  const dayNames = state.plan.filter(d => d.name).map(d => d.name)
-  const exercises = [...new Set(state.plan.flatMap(d => d.exercises.map(e => e.name).filter(Boolean)))]
+// An in-progress workout. Started from the Gym Plan (sets pre-filled from the
+// day) or "free" (empty). You fill actual weight/reps, can swap or add
+// exercises, then finish — every completed set is written to workoutLog, which
+// feeds computeStrength + computeDaily exactly as before.
+function WorkoutSession({ session }) {
+  const { state, setWorkoutLog, setActiveSession } = useStore()
+  const allExercises = [...new Set(state.plan.flatMap(d => d.exercises.map(e => e.name).filter(Boolean)))]
 
-  const [form, setForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
-    day: dayNames[0] || '', exercise: '', weight: '', reps: '', rir: '', tempo: '',
-  })
-  const set = (patch) => setForm(f => ({ ...f, ...patch }))
-  const canAdd = form.exercise.trim() && form.weight !== '' && form.reps !== ''
-  const add = () => {
-    if (!canAdd) return
-    setWorkoutLog([...log, { ...form, exercise: form.exercise.trim(), comments: '' }])
-    set({ weight: '', reps: '', rir: '', tempo: '' }) // keep date/day/exercise for fast repeat logging
+  const [ex, setEx] = useState(() =>
+    (session.exercises && session.exercises.length ? session.exercises : [{ name: '', sets: 3, goalWeight: '', goalReps: '' }])
+      .map(e => ({
+        name: e.name || '',
+        goalWeight: e.goalWeight ?? '',
+        goalReps: e.goalReps ?? '',
+        sets: Array.from({ length: Math.max(1, parseInt(e.sets) || 3) }, () => ({ weight: '', reps: '', rir: '' })),
+      }))
+  )
+  const upd = (xi, fn) => setEx(list => list.map((e, i) => i !== xi ? e : fn(e)))
+  const setName = (xi, name) => upd(xi, e => ({ ...e, name }))
+  const setSet = (xi, si, patch) => upd(xi, e => ({ ...e, sets: e.sets.map((s, j) => j !== si ? s : { ...s, ...patch }) }))
+  const addSet = (xi) => upd(xi, e => ({ ...e, sets: [...e.sets, { weight: '', reps: '', rir: '' }] }))
+  const rmSet = (xi, si) => upd(xi, e => ({ ...e, sets: e.sets.filter((_, j) => j !== si) }))
+  const addEx = () => setEx(list => [...list, { name: '', goalWeight: '', goalReps: '', sets: [0, 0, 0].map(() => ({ weight: '', reps: '', rir: '' })) }])
+  const rmEx = (xi) => setEx(list => list.filter((_, i) => i !== xi))
+
+  const completed = ex.reduce((n, e) => n + (e.name.trim() ? e.sets.filter(s => s.weight !== '' && s.reps !== '').length : 0), 0)
+  const finish = () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const newSets = []
+    ex.forEach(e => {
+      if (!e.name.trim()) return
+      e.sets.forEach(s => {
+        if (s.weight !== '' && s.reps !== '') newSets.push({ date: today, day: session.day || '', exercise: e.name.trim(), weight: s.weight, reps: s.reps, rir: s.rir, tempo: '', comments: '' })
+      })
+    })
+    if (newSets.length) setWorkoutLog([...state.workoutLog, ...newSets])
+    setActiveSession(null)
   }
-  const del = (i) => setWorkoutLog(log.filter((_, j) => j !== i))
-
-  // most-recent first; group by date
-  const rows = log.map((r, i) => ({ r, i })).sort((a, b) => (a.r.date < b.r.date ? 1 : a.r.date > b.r.date ? -1 : b.i - a.i))
+  const cancel = () => { if (completed === 0 || confirm('Discard this workout?')) setActiveSession(null) }
 
   return (
     <>
-      <PageHead eyebrow="Log" title="Workout Log" sub="Log your sets as you go. One row per set — it feeds your strength and volume tracking." />
-
-      <Card style={{ marginBottom: 16 }}>
-        <div className="eyebrow" style={{ marginBottom: 12 }}>Log a set</div>
-        <Field label="Exercise">
-          <input list="wl-exercises" placeholder="Pick or type an exercise" value={form.exercise} onChange={e => set({ exercise: e.target.value })} />
-          <datalist id="wl-exercises">{exercises.map(x => <option key={x} value={x} />)}</datalist>
-        </Field>
-        <div className="wl-grid" style={{ marginBottom: 16 }}>
-          <Field label="Weight (kg)"><input type="number" value={form.weight} onChange={e => set({ weight: e.target.value })} /></Field>
-          <Field label="Reps"><input type="number" value={form.reps} onChange={e => set({ reps: e.target.value })} /></Field>
-          <Field label="RIR"><input type="number" value={form.rir} onChange={e => set({ rir: e.target.value })} /></Field>
-          <Field label="Tempo"><input type="number" value={form.tempo} onChange={e => set({ tempo: e.target.value })} /></Field>
-        </div>
-        <div className="wl-grid" style={{ marginBottom: 16 }}>
-          <Field label="Date"><input type="date" value={form.date} onChange={e => set({ date: e.target.value })} /></Field>
-          <Field label="Day"><select value={form.day} onChange={e => set({ day: e.target.value })}><option value="">—</option>{dayNames.map(d => <option key={d}>{d}</option>)}</select></Field>
-        </div>
-        <button className="btn primary" onClick={add} disabled={!canAdd}>Add set</button>
-      </Card>
-
+      <PageHead eyebrow="Workout" title={session.day || 'Free workout'} sub="Enter what you lift. Swap or add an exercise if you need to, then finish to save it to your log." />
       <Card>
-        <div className="eyebrow">Recent sets</div>
-        {!rows.length && <p className="faint" style={{ marginTop: 12 }}>No sets logged yet. Add your first one above.</p>}
-        {rows.map(({ r, i }, idx) => {
-          const showDate = idx === 0 || rows[idx - 1].r.date !== r.date
-          const oneRm = r.weight !== '' && r.reps !== '' ? epley1RM(r.weight, r.reps, r.rir).toFixed(1) : null
-          return (
-            <React.Fragment key={i}>
-              {showDate && <div className="wl-date">{ddmm(r.date) || 'No date'}{r.day ? ` · ${r.day}` : ''}</div>}
-              <div className="wl-set">
-                <div style={{ minWidth: 0 }}>
-                  <div className="wl-ex">{r.exercise}</div>
-                  <div className="wl-meta">
-                    {r.weight || '–'}kg × {r.reps || '–'}
-                    {r.rir !== '' && r.rir != null ? ` · ${r.rir} RIR` : ''}
-                    {r.tempo !== '' && r.tempo != null ? ` · tempo ${r.tempo}` : ''}
-                  </div>
-                </div>
-                <div className="wl-right">
-                  {oneRm && <div className="wl-1rm accent">{oneRm}<small>est 1RM</small></div>}
-                  <button className="gp-x" onClick={() => del(i)} aria-label="Delete set">✕</button>
-                </div>
+        {ex.map((e, xi) => (
+          <div className="ws-ex" key={xi}>
+            <div className="ws-ex-head">
+              <input className="ws-ex-name" list="ws-ex-list" placeholder="Exercise" value={e.name} onChange={ev => setName(xi, ev.target.value)} />
+              <button className="ws-x" onClick={() => rmEx(xi)} aria-label="Remove exercise">✕</button>
+            </div>
+            {e.sets.map((s, si) => (
+              <div className="ws-set" key={si}>
+                <span className="ws-n">Set {si + 1}</span>
+                <input type="number" placeholder={e.goalWeight !== '' && e.goalWeight != null ? `${e.goalWeight}` : 'kg'} value={s.weight} onChange={ev => setSet(xi, si, { weight: ev.target.value })} />
+                <input type="number" placeholder={e.goalReps !== '' && e.goalReps != null ? `${e.goalReps}` : 'reps'} value={s.reps} onChange={ev => setSet(xi, si, { reps: ev.target.value })} />
+                <input type="number" placeholder="RIR" value={s.rir} onChange={ev => setSet(xi, si, { rir: ev.target.value })} />
+                <button className="ws-x" onClick={() => rmSet(xi, si)} aria-label="Remove set">✕</button>
               </div>
-            </React.Fragment>
-          )
-        })}
+            ))}
+            <button className="ws-addset" onClick={() => addSet(xi)}>+ Add set</button>
+          </div>
+        ))}
+        <datalist id="ws-ex-list">{allExercises.map(x => <option key={x} value={x} />)}</datalist>
+        <button className="btn ghost" onClick={addEx} style={{ marginTop: 4 }}>+ Add exercise</button>
+        <div className="divider" />
+        <div className="btn-row">
+          <button className="btn primary" onClick={finish} disabled={completed === 0}>Finish workout{completed ? ` · ${completed} sets` : ''}</button>
+          <button className="btn ghost" onClick={cancel}>Cancel</button>
+        </div>
       </Card>
+    </>
+  )
+}
+
+// Phone-first workout log: start a session (free, or from the plan), and review
+// past workouts as horizontal day cards. Same workoutLog model + 1RM maths.
+export default function WorkoutLog() {
+  const { state, setWorkoutLog, setActiveSession } = useStore()
+  if (state.activeSession) return <WorkoutSession session={state.activeSession} />
+
+  const log = state.workoutLog
+  const del = (i) => setWorkoutLog(log.filter((_, j) => j !== i))
+  const freeStart = () => setActiveSession({ day: '', exercises: [] })
+
+  const byDate = {}
+  log.forEach((r, i) => { (byDate[r.date] ||= []).push({ r, i }) })
+  const dates = Object.keys(byDate).sort((a, b) => (a < b ? 1 : -1))
+
+  return (
+    <>
+      <PageHead eyebrow="Log" title="Workout Log" sub="Start a session here, or tap Start on a day in your Gym Plan. Everything you log feeds your strength and volume tracking." />
+      <div className="btn-row" style={{ marginBottom: 16 }}>
+        <button className="btn primary" onClick={freeStart}>+ Start a free workout</button>
+      </div>
+
+      {!dates.length && <Card><p className="faint" style={{ margin: 0 }}>No workouts logged yet. Start one above, or from your Gym Plan.</p></Card>}
+      {dates.length > 0 && (
+        <div className="wl-scroll">
+          {dates.map(date => {
+            const sets = byDate[date]
+            return (
+              <Card key={date}>
+                <div className="wl-date">{ddmm(date)}{sets[0].r.day ? ` · ${sets[0].r.day}` : ''}</div>
+                {sets.map(({ r, i }) => {
+                  const oneRm = r.weight !== '' && r.reps !== '' ? epley1RM(r.weight, r.reps, r.rir).toFixed(1) : null
+                  return (
+                    <div className="wl-set" key={i}>
+                      <div style={{ minWidth: 0 }}>
+                        <div className="wl-ex">{r.exercise}</div>
+                        <div className="wl-meta">{r.weight || '–'}kg × {r.reps || '–'}{r.rir !== '' && r.rir != null ? ` · ${r.rir} RIR` : ''}</div>
+                      </div>
+                      <div className="wl-right">
+                        {oneRm && <div className="wl-1rm accent">{oneRm}<small>est 1RM</small></div>}
+                        <button className="gp-x" onClick={() => del(i)} aria-label="Delete set">✕</button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </Card>
+            )
+          })}
+        </div>
+      )}
     </>
   )
 }
