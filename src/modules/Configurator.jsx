@@ -135,6 +135,42 @@ const VOICE_CHOICES = [
   { value: 'Neutral and matter-of-fact. Lead with the data and clear recommendations, minimal chit-chat.', title: 'Just the facts', sub: 'Calm and analytical' },
 ]
 
+const EQUIPMENT_CHOICES = [
+  { value: 'Full gym', title: 'Full gym', sub: 'A bit of everything' },
+  { value: 'Barbell', title: 'Barbell' },
+  { value: 'Dumbbells', title: 'Dumbbells' },
+  { value: 'Machines & cables', title: 'Machines & cables' },
+  { value: 'Kettlebells', title: 'Kettlebells' },
+  { value: 'Bands', title: 'Resistance bands' },
+  { value: 'Bodyweight only', title: 'Bodyweight only', sub: 'No kit needed' },
+]
+const EXPERIENCE_CHOICES = [
+  { value: 'Beginner', title: 'Beginner', sub: 'Newer to lifting' },
+  { value: 'Intermediate', title: 'Intermediate', sub: 'A solid base' },
+  { value: 'Advanced', title: 'Advanced', sub: 'Years of training' },
+]
+
+// multi-select chips storing an array in draft[k]
+function MultiChips({ k, options, columns }) {
+  const { draft, update } = useDraft()
+  const sel = draft[k] || []
+  const toggle = (v) => update({ [k]: sel.includes(v) ? sel.filter(x => x !== v) : [...sel, v] })
+  return (
+    <div className={`cfg-choices ${columns === 2 ? 'two' : ''}`}>
+      {options.map(o => {
+        const on = sel.includes(o.value)
+        return (
+          <button key={o.value} type="button" className={`cfg-choice ${on ? 'selected' : ''}`}
+            aria-pressed={on} onClick={() => toggle(o.value)}>
+            <span className="c-title">{o.title}</span>
+            {o.sub && <span className="c-sub">{o.sub}</span>}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // CONFIGURATOR-LOCAL goal suggestion. Pure UI maths from the draft inputs —
 // deliberately NOT the engine. A realistic weekly rate as a fraction of
 // bodyweight, by goal type, nudged a little by experience. Then projects an
@@ -184,57 +220,22 @@ function GoalSuggestion() {
   )
 }
 
-// What do you train? Exercises grouped by equipment type — the user toggles
-// the ones they do regularly. Two jobs: (1) gauge training level from the
-// pattern (the heavy technical compounds count for more), and (2) persist the
-// selection so the gym plan can be built from it later (via the Claude
-// connector). The big barbell lifts + weighted bodyweight read as "technical".
+// Exercises grouped by equipment — used by the veto step (tap to exclude).
 const EXERCISE_GROUPS = [
-  {
-    label: 'Barbell', emoji: '🏋️',
-    items: ['Back Squat', 'Deadlift', 'Bench Press', 'Overhead Press', 'Barbell Row', 'Romanian Deadlift'],
-    technical: true,
-  },
-  {
-    label: 'Dumbbell', emoji: '🛎️',
-    items: ['DB Bench Press', 'DB Shoulder Press', 'DB Row', 'DB Curl', 'Lateral Raise', 'DB Lunge'],
-    technical: false,
-  },
-  {
-    label: 'Machine & cable', emoji: '⚙️',
-    items: ['Leg Press', 'Lat Pulldown', 'Cable Row', 'Leg Curl', 'Cable Fly', 'Tricep Pushdown'],
-    technical: false,
-  },
-  {
-    label: 'Bodyweight', emoji: '🤸',
-    items: ['Pull-up', 'Chin-up', 'Dip', 'Push-up', 'Hanging Leg Raise', 'Nordic Curl'],
-    technical: false,
-  },
+  { label: 'Barbell', emoji: '🏋️', items: ['Back Squat', 'Deadlift', 'Bench Press', 'Overhead Press', 'Barbell Row', 'Romanian Deadlift'] },
+  { label: 'Dumbbell', emoji: '🛎️', items: ['Dumbbell Bench Press', 'Dumbbell Shoulder Press', 'Dumbbell Row', 'Dumbbell Curl', 'Lateral Raise', 'Walking Lunge'] },
+  { label: 'Machine & cable', emoji: '⚙️', items: ['Leg Press', 'Lat Pulldown', 'Seated Cable Row', 'Leg Curl', 'Leg Extension', 'Tricep Pushdown'] },
+  { label: 'Bodyweight', emoji: '🤸', items: ['Pull-up', 'Chin-up', 'Dip', 'Push-up', 'Calf Raise', 'Nordic Curl'] },
 ]
-// heavy compounds that signal a more advanced trainer
-const TECHNICAL = new Set([
-  'Back Squat', 'Deadlift', 'Bench Press', 'Overhead Press', 'Barbell Row', 'Romanian Deadlift',
-  'Pull-up', 'Chin-up', 'Dip', 'Nordic Curl',
-])
-function inferExperience(list) {
-  if (!list.length) return ''
-  const tech = list.filter(n => TECHNICAL.has(n)).length
-  const score = list.length + tech * 0.6
-  if (score <= 4) return 'Beginner'
-  if (score <= 10) return 'Intermediate'
-  return 'Advanced'
-}
 
-function ExerciseGrid() {
+// Veto step — tap exercises to EXCLUDE from the generated plan.
+function VetoGrid() {
   const { draft, update } = useDraft()
-  const selected = draft.exercisesDone || []
-  const toggle = (name) => {
-    const next = selected.includes(name) ? selected.filter(x => x !== name) : [...selected, name]
-    update({ exercisesDone: next, experience: inferExperience(next) })
-  }
+  const selected = draft.veto || []
+  const toggle = (name) => update({ veto: selected.includes(name) ? selected.filter(x => x !== name) : [...selected, name] })
   return (
     <>
-      <p className="cfg-lede" style={{ marginBottom: 18 }}>Tap the lifts you do regularly — barbell, dumbbell, machine or bodyweight. This shapes your plan and reads your level.</p>
+      <p className="cfg-lede" style={{ marginBottom: 18 }}>Tap anything you'd rather skip — an old injury, a pet hate, whatever. We'll keep these out of your plan.</p>
       {EXERCISE_GROUPS.map(g => (
         <div className="cfg-grp" key={g.label}>
           <div className="cfg-grp-label"><span>{g.emoji}</span>{g.label}</div>
@@ -251,11 +252,7 @@ function ExerciseGrid() {
           </div>
         </div>
       ))}
-      <Sign>
-        {draft.experience
-          ? `Reading you as ${draft.experience.toLowerCase()} from this — it tunes how fast we expect strength and muscle to move, and seeds your gym plan.`
-          : 'No need to label yourself — we read your training level from what you pick.'}
-      </Sign>
+      {selected.length > 0 && <Sign>Skipping {selected.length} exercise{selected.length > 1 ? 's' : ''} — your plan won't include {selected.length > 1 ? 'them' : 'it'}.</Sign>}
     </>
   )
 }
@@ -460,10 +457,31 @@ export default function Configurator() {
     // — Training (one per screen) —
     {
       eyebrow: 'Training',
+      requires: 'experience',
       render: () => (
         <>
-          <h1 className="cfg-q">What do you train?</h1>
-          <ExerciseGrid />
+          <h1 className="cfg-q">How experienced are you?</h1>
+          <ChoiceChips k="experience" options={EXPERIENCE_CHOICES} />
+          <Sign>Calibrates how quickly we expect your strength and muscle to move, and shapes your plan.</Sign>
+        </>
+      ),
+    },
+    {
+      eyebrow: 'Training',
+      render: () => (
+        <>
+          <h1 className="cfg-q">What kit do you have?</h1>
+          <MultiChips k="equipment" options={EQUIPMENT_CHOICES} columns={2} />
+          <Sign>Your plan will only use exercises you can actually do. Pick all that apply.</Sign>
+        </>
+      ),
+    },
+    {
+      eyebrow: 'Training',
+      render: () => (
+        <>
+          <h1 className="cfg-q">Any exercises you'd rather skip?</h1>
+          <VetoGrid />
         </>
       ),
     },
@@ -556,7 +574,7 @@ export default function Configurator() {
             {(i.sex || '—')}, {(i.age || '—')} · {(i.heightCm || '—')}cm · {(i.startWeightKg || '—')}kg → {(i.goalWeightKg || '—')}kg.
             Goal: {(i.goal ? GOAL_LABEL[i.goal] : '—')} over {(i.periodDays || '—')} days.
           </p>
-          <p className="cfg-lede">Now your coach steps in — they've got everything they need. Tweak any of this later in Settings → Inputs.</p>
+          <p className="cfg-lede">Next, we'll build your gym plan from this — you can refine it, then start training. Tweak anything later in Settings → Inputs.</p>
         </>
       ),
     },
@@ -571,7 +589,7 @@ export default function Configurator() {
     )
     setInputs(filled)
     setOnboarded(true)
-    setView('dashboard')
+    setView('plan')
   }
   const req = steps[step].requires
   const stepOk = !req || (Array.isArray(req) ? req.every(k => isFilled(draft, k)) : isFilled(draft, req))
@@ -595,7 +613,7 @@ export default function Configurator() {
           <div className="cfg-nav">
             {step > 0 && <button className="btn back" onClick={back}>←</button>}
             <button className="btn primary" onClick={next} disabled={!stepOk}>
-              {step === 0 ? 'Build my system' : last ? 'Meet your coach' : 'Continue'}
+              {step === 0 ? 'Build my system' : last ? 'Build my plan' : 'Continue'}
             </button>
           </div>
         </div>

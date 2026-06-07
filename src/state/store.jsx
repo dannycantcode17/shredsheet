@@ -14,6 +14,7 @@ const seed = () => ({
   apiKey: '',
   onboarded: false,
   planLocked: false,     // gym plan confirmed -> read-only until unlocked
+  planGenerated: false,  // has a plan been auto-generated since onboarding
   activeSession: null,   // { day, exercises } when a workout is in progress
 })
 
@@ -31,6 +32,7 @@ export function StoreProvider({ children }) {
     setApiKey: (apiKey) => setState(s => ({ ...s, apiKey })),
     setOnboarded: (v) => setState(s => ({ ...s, onboarded: v })),
     setPlanLocked: (v) => setState(s => ({ ...s, planLocked: v })),
+    setPlanGenerated: (v) => setState(s => ({ ...s, planGenerated: v })),
     setActiveSession: (activeSession) => setState(s => ({ ...s, activeSession })),
     replaceState: (next) => setState({ ...seed(), ...next }),
     reset: () => setState(seed()),
