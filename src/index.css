@@ -324,6 +324,14 @@ select option { background: #0f1c33; }
 .wl-scroll { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
 .wl-scroll > .card { scroll-snap-align: start; flex: 0 0 86%; max-width: 380px; }
 @media (min-width: 720px) { .wl-scroll > .card { flex-basis: 320px; } }
+
+/* Food page */
+.food-totals { display: flex; gap: 28px; }
+.food-big { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.food-entry { display: flex; gap: 10px; align-items: flex-end; }
+.food-entry .gp-f { flex: 1; }
+.food-entry .gp-f input { width: 100%; }
+.food-entry .btn { flex: 0 0 auto; }
 .legend .key { display:inline-flex; align-items:center; gap: 7px; }
 .swatch { width: 12px; height: 3px; border-radius: 2px; display:inline-block; }
 

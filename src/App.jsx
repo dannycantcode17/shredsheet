@@ -4,6 +4,7 @@ import Inputs from './modules/Inputs.jsx'
 import GymPlan from './modules/GymPlan.jsx'
 import DailyLog from './modules/DailyLog.jsx'
 import WorkoutLog from './modules/WorkoutLog.jsx'
+import FoodLog from './modules/FoodLog.jsx'
 import BodycompDash from './modules/BodycompDash.jsx'
 import GymDash from './modules/GymDash.jsx'
 import AICoach from './modules/AICoach.jsx'
@@ -21,8 +22,9 @@ const NAV = [
     { key: 'plan', label: 'Gym Plan' },
   ]},
   { group: 'Log', items: [
-    { key: 'daily', label: 'Daily Log' },
+    { key: 'food', label: 'Food' },
     { key: 'workout', label: 'Workout Log' },
+    { key: 'daily', label: 'Daily Log' },
   ]},
 ]
 
@@ -61,6 +63,7 @@ export default function App() {
         <main className="main">
           {v === 'inputs' && <Inputs />}
           {v === 'plan' && <GymPlan />}
+          {v === 'food' && <FoodLog />}
           {v === 'daily' && <DailyLog />}
           {v === 'workout' && <WorkoutLog />}
           {v === 'bodycomp' && <BodycompDash />}
