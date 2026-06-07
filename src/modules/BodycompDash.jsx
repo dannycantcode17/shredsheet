@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
 import { PageHead, Card, StatBox, fmt } from '../components/ui.jsx'
 import { cleanliness } from '../lib/engine.js'
@@ -11,7 +11,11 @@ const grid = 'rgba(255,255,255,0.06)'
 const tipFmt = (v) => (v == null || Number.isNaN(Number(v)) ? '–' : Number(Number(v).toFixed(2)))
 
 export default function BodycompDash() {
-  const { state, planRes, daily } = useStore()
+  const { state, planRes, daily, setDailyLog } = useStore()
+  const [w, setW] = useState('')
+  const todayNum = Math.min(Math.max(1, planRes.days), Math.max(1, Math.floor((Date.parse(new Date().toISOString().slice(0, 10)) - Date.parse(state.inputs.startDate)) / 86400000) + 1))
+  const loggedToday = state.dailyLog[todayNum]?.weight
+  const logWeight = () => { if (w === '') return; setDailyLog(todayNum, { weight: w }); setW('') }
   const days = planRes.days
   const lastLogged = daily.rows.reduce((m, r) => (r.logged ? r.dayNum : m), 0)
   const curve = daily.rows.map(r => ({
@@ -28,7 +32,16 @@ export default function BodycompDash() {
   return (
     <>
       <PageHead eyebrow="Insights" title="Bodycomp Dashboard" sub="Your plan compared with what you've actually logged — fat, muscle and energy balance over time." />
-      {noData && <Card style={{ marginBottom: 18 }}><span className="muted">Nothing logged yet, so these show your targets for now. Once you start filling in the Daily Log, your actual curves appear here.</span></Card>}
+
+      <Card style={{ marginBottom: 16 }}>
+        <div className="food-entry">
+          <label className="gp-f" style={{ flex: 1 }}><span>Today's weigh-in</span><input type="number" placeholder={loggedToday != null && loggedToday !== '' ? `${loggedToday}` : 'kg'} value={w} onChange={e => setW(e.target.value)} /></label>
+          <button className="btn primary" onClick={logWeight} disabled={w === ''}>Log weight</button>
+        </div>
+        {loggedToday != null && loggedToday !== '' && <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>Logged today: {loggedToday}kg.</p>}
+      </Card>
+
+      {noData && <Card style={{ marginBottom: 18 }}><span className="muted">Nothing logged yet, so these show your targets for now. Once you start logging, your actual curves appear here.</span></Card>}
 
       <div className="grid cols-2">
         <Card>

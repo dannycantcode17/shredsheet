@@ -79,15 +79,26 @@ function WorkoutSession({ session }) {
   )
 }
 
-// Phone-first workout log: start a session (free, or from the plan), and review
-// past workouts as horizontal day cards. Same workoutLog model + 1RM maths.
-export default function WorkoutLog() {
-  const { state, setWorkoutLog, setActiveSession } = useStore()
-  if (state.activeSession) return <WorkoutSession session={state.activeSession} />
-
+// History view: start a session (free, or from the plan), log a cardio
+// session (flows into today's cardio minutes), and review past workouts as
+// horizontal day cards. Same workoutLog model + 1RM maths.
+function WorkoutHistory() {
+  const { state, setWorkoutLog, setActiveSession, setDailyLog } = useStore()
   const log = state.workoutLog
+  const days = Math.max(1, parseInt(state.inputs.periodDays) || 1)
+  const today = Math.min(days, Math.max(1, Math.floor((Date.parse(new Date().toISOString().slice(0, 10)) - Date.parse(state.inputs.startDate)) / 86400000) + 1))
+  const [cardioMin, setCardioMin] = useState('')
+
   const del = (i) => setWorkoutLog(log.filter((_, j) => j !== i))
   const freeStart = () => setActiveSession({ day: '', exercises: [] })
+  const logCardio = () => {
+    const m = Math.round(parseFloat(cardioMin) || 0)
+    if (!m) return
+    const cur = parseFloat(state.dailyLog[today]?.cardioMins) || 0
+    setDailyLog(today, { cardioMins: Math.round(cur + m) })
+    setCardioMin('')
+  }
+  const todayCardio = Math.round(parseFloat(state.dailyLog[today]?.cardioMins) || 0)
 
   const byDate = {}
   log.forEach((r, i) => { (byDate[r.date] ||= []).push({ r, i }) })
@@ -99,6 +110,15 @@ export default function WorkoutLog() {
       <div className="btn-row" style={{ marginBottom: 16 }}>
         <button className="btn primary" onClick={freeStart}>+ Start a free workout</button>
       </div>
+
+      <Card style={{ marginBottom: 16 }}>
+        <div className="eyebrow" style={{ marginBottom: 10 }}>Log a cardio session</div>
+        <div className="food-entry">
+          <label className="gp-f" style={{ flex: 1 }}><span>Minutes (today)</span><input type="number" placeholder="min" value={cardioMin} onChange={e => setCardioMin(e.target.value)} /></label>
+          <button className="btn" onClick={logCardio} disabled={!cardioMin}>Add</button>
+        </div>
+        {todayCardio > 0 && <p className="faint" style={{ margin: '10px 0 0', fontSize: 12.5 }}>Today so far: {todayCardio} min — feeds your daily burn.</p>}
+      </Card>
 
       {!dates.length && <Card><p className="faint" style={{ margin: 0 }}>No workouts logged yet. Start one above, or from your Gym Plan.</p></Card>}
       {dates.length > 0 && (
@@ -130,4 +150,10 @@ export default function WorkoutLog() {
       )}
     </>
   )
+}
+
+// Phone-first workout log: an in-progress session, or the history view.
+export default function WorkoutLog() {
+  const { state } = useStore()
+  return state.activeSession ? <WorkoutSession session={state.activeSession} /> : <WorkoutHistory />
 }
