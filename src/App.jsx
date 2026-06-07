@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useStore } from './state/store.jsx'
 import Inputs from './modules/Inputs.jsx'
 import GymPlan from './modules/GymPlan.jsx'
@@ -28,26 +28,33 @@ const NAV = [
 
 export default function App() {
   const { state, view, setView } = useStore()
+  const [navOpen, setNavOpen] = useState(false)
   if (!state.onboarded) return <Configurator />
   const v = view === 'dashboard' ? 'bodycomp' : view
+  const go = (k) => { setView(k); setNavOpen(false) }
   return (
     <div className="app-root">
+      <header className="topbar">
+        <div className="brand">shred<span className="accent">sheet</span></div>
+        <button className="menu-btn" onClick={() => setNavOpen(o => !o)} aria-label="Menu" aria-expanded={navOpen}>☰</button>
+      </header>
       <div className="shell">
-        <aside className="sidebar">
+        {navOpen && <div className="nav-backdrop" onClick={() => setNavOpen(false)} />}
+        <aside className={`sidebar ${navOpen ? 'open' : ''}`}>
           <div className="brand">shred<span className="accent">sheet</span></div>
           <div className="brand-sub">less faff, more gains</div>
           {NAV.map(g => (
             <div key={g.group}>
               <div className="nav-group-label">{g.group}</div>
               {g.items.map(it => (
-                <button key={it.key} className={`nav-item ${v === it.key ? 'active' : ''}`} onClick={() => setView(it.key)}>
+                <button key={it.key} className={`nav-item ${v === it.key ? 'active' : ''}`} onClick={() => go(it.key)}>
                   {it.label}
                 </button>
               ))}
             </div>
           ))}
           <div className="nav-group-label">System</div>
-          <button className={`nav-item ${v === 'settings' ? 'active' : ''}`} onClick={() => setView('settings')}>
+          <button className={`nav-item ${v === 'settings' ? 'active' : ''}`} onClick={() => go('settings')}>
             Settings
           </button>
         </aside>
