@@ -6,7 +6,11 @@ import { askCoach } from '../lib/ai.js'
 
 export default function AICoach() {
   const { state, planRes, daily, strength } = useStore()
-  const context = useMemo(() => buildCoachContext(state.inputs, state.plan, planRes, daily, strength), [state, planRes, daily, strength])
+  const context = useMemo(() => {
+    const base = buildCoachContext(state.inputs, state.plan, planRes, daily, strength)
+    // user-chosen tone, appended app-side (engine's buildCoachContext is untouched)
+    return state.inputs.coachVoice ? `${base}\n\nCOACH TONE: ${state.inputs.coachVoice}` : base
+  }, [state, planRes, daily, strength])
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)

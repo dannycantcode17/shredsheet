@@ -126,6 +126,15 @@ const INTENSITY_CHOICES = [
   { value: 'Intense', title: 'Intense', sub: 'Hard graft, near the limit' },
 ]
 
+// Coach voice presets. The VALUE is the tone instruction that gets appended to
+// the coach's prompt (app-side); title/sub are what the user sees.
+const VOICE_CHOICES = [
+  { value: 'Warm, patient and supportive. Encourage effort, celebrate small wins, and never judge a slip.', title: 'Gentle & encouraging', sub: 'Supportive and kind' },
+  { value: 'Direct, concise and honest. Get to the point with no fluff — clear, and still respectful.', title: 'Straight-talking', sub: 'Clear and to the point' },
+  { value: 'Upbeat, energetic and motivating. Bring positive energy and momentum.', title: 'Upbeat & motivating', sub: 'High energy' },
+  { value: 'Neutral and matter-of-fact. Lead with the data and clear recommendations, minimal chit-chat.', title: 'Just the facts', sub: 'Calm and analytical' },
+]
+
 // CONFIGURATOR-LOCAL goal suggestion. Pure UI maths from the draft inputs —
 // deliberately NOT the engine. A realistic weekly rate as a fraction of
 // bodyweight, by goal type, nudged a little by experience. Then projects an
@@ -362,6 +371,18 @@ export default function Configurator() {
           </div>
           <p className="cfg-lede">First we build your system — who you are, what you're chasing. One quick question at a time.</p>
           <div className="cfg-signpost"><span className="ico">🔒</span><span>Your coach joins once your system is set — no point coaching a blank sheet.</span></div>
+        </>
+      ),
+    },
+
+    // — Coach voice (asked early; sets the tone for the whole journey) —
+    {
+      eyebrow: 'Your coach',
+      render: () => (
+        <>
+          <h1 className="cfg-q">How should your coach talk to you?</h1>
+          <ChoiceChips k="coachVoice" options={VOICE_CHOICES} />
+          <Sign>Sets your coach's tone — pick whatever feels right. You can change it later, and it never affects your numbers.</Sign>
         </>
       ),
     },
