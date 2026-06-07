@@ -555,6 +555,23 @@ a { color: var(--accent); }
 .cfg-loop-step .l-sub { font-size: 12.5px; color: var(--ink-soft); }
 @keyframes cfg-loop-in { to { opacity: 1; transform: none; } }
 @keyframes cfg-fade { to { opacity: 1; } }
+
+/* TEMP JOKE — go bright pink when Female is selected. Delete this rule to remove. */
+.cfg-card.joke-pink {
+  background: linear-gradient(160deg, #ff8ad4 0%, #ff3ea5 60%, #ff66c4 100%);
+  border-color: #ffd1ec;
+  box-shadow: 0 18px 60px rgba(255, 62, 165, 0.45), 0 0 0 3px rgba(255,255,255,0.18) inset;
+  color: #3d0226;
+  transition: background 220ms var(--ease), box-shadow 220ms var(--ease);
+}
+.cfg-card.joke-pink .cfg-q,
+.cfg-card.joke-pink .cfg-eyebrow,
+.cfg-card.joke-pink .c-title { color: #3d0226; }
+.cfg-card.joke-pink .cfg-signpost,
+.cfg-card.joke-pink .c-sub { color: rgba(61, 2, 38, 0.7); }
+.cfg-card.joke-pink .cfg-signpost .ico { color: #7a0a4d; }
+.cfg-card.joke-pink .cfg-choice { border-color: rgba(61,2,38,0.25); background: rgba(255,255,255,0.35); }
+.cfg-card.joke-pink .cfg-choice.selected { background: #fff; border-color: #fff; box-shadow: 0 0 0 2px #7a0a4d inset; }
 @media (prefers-reduced-motion: reduce) {
   .cfg-card, .cfg-loop-step, .cfg-loop-arrow { animation: none; opacity: 1; transform: none; }
 }

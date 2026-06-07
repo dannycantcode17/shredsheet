@@ -605,7 +605,8 @@ export default function Configurator() {
             <div className="fill" style={{ width: pct }} />
           </div>
 
-          <div className="cfg-card" key={step}>
+          {/* TEMP JOKE: bright-pink the sex step when Female is picked. Remove anytime. */}
+          <div className={`cfg-card ${steps[step].requires === 'sex' && draft.sex === 'Female' ? 'joke-pink' : ''}`} key={step}>
             <div className="cfg-eyebrow">{steps[step].eyebrow}</div>
             {steps[step].render()}
           </div>
