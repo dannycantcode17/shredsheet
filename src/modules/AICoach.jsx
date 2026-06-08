@@ -29,7 +29,7 @@ export default function AICoach() {
 
   return (
     <>
-      <PageHead eyebrow="Insights · 7" title="AI Coach" sub="Your live coach reads every number in the sheet. Ask anything, or fire off a full analysis." />
+      <PageHead eyebrow="Insights · 8" title="AI Coach" sub="Your live coach reads every number in the sheet. Ask anything, or fire off a full analysis." />
       <div className="row-between" style={{ marginBottom: 14 }}>
         <div className="btn-row">
           <button className="btn primary" onClick={() => send('Analyse my data: what is working, what is not, and the single most important change I should make this week?')} disabled={busy}>⚡ Analyse my data</button>

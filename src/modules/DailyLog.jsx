@@ -7,7 +7,7 @@ export default function DailyLog() {
   const days = Math.max(1, parseInt(state.inputs.periodDays) || 1)
   const byDay = Object.fromEntries(daily.rows.map(r => [r.dayNum, r]))
   const Cell = ({ d, k, w = 70 }) => (
-    <td><input style={{ width: w }} type="number" value={state.dailyLog[d]?.[k] ?? ''} onChange={e => setDailyLog(d, { [k]: e.target.value })} /></td>
+    <td><input style={{ width: w }} type="number" inputMode="decimal" value={state.dailyLog[d]?.[k] ?? ''} onChange={e => setDailyLog(d, { [k]: e.target.value })} /></td>
   )
   return (
     <>
