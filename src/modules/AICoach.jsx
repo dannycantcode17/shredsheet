@@ -6,7 +6,11 @@ import { askCoach } from '../lib/ai.js'
 
 export default function AICoach() {
   const { state, planRes, daily, strength } = useStore()
-  const context = useMemo(() => buildCoachContext(state.inputs, state.plan, planRes, daily, strength), [state, planRes, daily, strength])
+  const context = useMemo(() => {
+    const base = buildCoachContext(state.inputs, state.plan, planRes, daily, strength)
+    // user-chosen tone, appended app-side (engine's buildCoachContext is untouched)
+    return state.inputs.coachVoice ? `${base}\n\nCOACH TONE: ${state.inputs.coachVoice}` : base
+  }, [state, planRes, daily, strength])
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
@@ -29,17 +33,20 @@ export default function AICoach() {
 
   return (
     <>
-      <PageHead eyebrow="Insights · 7" title="AI Coach" sub="Your live coach reads every number in the sheet. Ask anything, or fire off a full analysis." />
-      <div className="row-between" style={{ marginBottom: 14 }}>
+      <PageHead eyebrow="Insights" title="AI Coach" sub="Your coach can see everything in your sheet — your plan, your logs, your progress. Ask anything." />
+      <div style={{ marginBottom: 14 }}>
         <div className="btn-row">
-          <button className="btn primary" onClick={() => send('Analyse my data: what is working, what is not, and the single most important change I should make this week?')} disabled={busy}>⚡ Analyse my data</button>
-          <button className="btn" onClick={() => send('In two lines, am I on track for my goal? Be blunt.')} disabled={busy}>Am I on track?</button>
+          <button className="btn primary" onClick={() => send('Analyse my data: what is working, what is not, and the single most important change I should make this week?')} disabled={busy}>Analyse my data</button>
+          <button className="btn" onClick={() => send("What's the single most important thing I should focus on this week, and why?")} disabled={busy}>What should I focus on this week?</button>
+          <button className="btn" onClick={() => send('In two lines, am I on track for my goal?')} disabled={busy}>Am I on track?</button>
+          <button className="btn" onClick={() => send('Explain my key numbers in plain English — what they mean and how they relate to each other.')} disabled={busy}>Explain my numbers</button>
+          <button className="btn" onClick={() => send('Based on my data, what adjustments to my plan would you suggest, if any?')} disabled={busy}>Adjust my plan</button>
         </div>
-        <button className="btn ghost" onClick={copyPrompt}>Copy full prompt</button>
+        <div style={{ marginTop: 10 }}><button className="btn ghost" onClick={copyPrompt}>Copy full prompt</button></div>
       </div>
       <Card>
         <div className="chat-log" ref={logRef}>
-          {!messages.length && <div className="msg sys">The coach already has your full context loaded. Try a question, or hit “Analyse my data”.</div>}
+          {!messages.length && <div className="msg sys">Your coach can already see your data. Ask a question, or tap one of the prompts above to get started.</div>}
           {messages.map((m, i) => <div key={i} className={`msg ${m.role === 'user' ? 'user' : 'ai'}`}>{m.content}</div>)}
           {busy && <div className="msg ai faint">Thinking…</div>}
         </div>
@@ -48,7 +55,7 @@ export default function AICoach() {
           <input placeholder="Ask your coach…" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} />
           <button className="btn primary" onClick={() => send()} disabled={busy}>Send</button>
         </div>
-        {!state.apiKey && <div style={{ marginTop: 10 }}><Pill tone="muted">Tip: for the live preview, paste your Anthropic key in Settings. After deploy, the server key handles it.</Pill></div>}
+        {!state.apiKey && <div style={{ marginTop: 10 }}><Pill tone="muted">For the live preview, add your Anthropic key in Settings. Once deployed, the server key handles it.</Pill></div>}
       </Card>
     </>
   )

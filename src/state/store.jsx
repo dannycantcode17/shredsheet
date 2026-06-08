@@ -9,10 +9,13 @@ export const useStore = () => useContext(StoreCtx)
 const seed = () => ({
   inputs: { ...DEFAULT_INPUTS },
   plan: DEFAULT_PLAN,
-  dailyLog: {},          // { [dayNum]: {cardioMins, steps, calories, protein, weight} }
+  dailyLog: {},          // { [dayNum]: {cardioMins, steps, calories, protein, weight, meals} }
   workoutLog: [],        // [{date, day, exercise, weight, reps, rir, tempo, comments}]
   apiKey: '',
   onboarded: false,
+  planLocked: false,     // gym plan confirmed -> read-only until unlocked
+  planGenerated: false,  // has a plan been auto-generated since onboarding
+  activeSession: null,   // { day, exercises } when a workout is in progress
 })
 
 export function StoreProvider({ children }) {
@@ -28,6 +31,9 @@ export function StoreProvider({ children }) {
     setWorkoutLog: (workoutLog) => setState(s => ({ ...s, workoutLog })),
     setApiKey: (apiKey) => setState(s => ({ ...s, apiKey })),
     setOnboarded: (v) => setState(s => ({ ...s, onboarded: v })),
+    setPlanLocked: (v) => setState(s => ({ ...s, planLocked: v })),
+    setPlanGenerated: (v) => setState(s => ({ ...s, planGenerated: v })),
+    setActiveSession: (activeSession) => setState(s => ({ ...s, activeSession })),
     replaceState: (next) => setState({ ...seed(), ...next }),
     reset: () => setState(seed()),
   }), [])
