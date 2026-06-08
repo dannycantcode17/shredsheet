@@ -11,7 +11,7 @@ const Pct = ({ k }) => { const { state, setInputs } = useStore(); return (
 )}
 
 export default function Inputs() {
-  const { state, setInputs, planRes } = useStore()
+  const { state, setInputs, planRes, setOnboarded, setView } = useStore()
   const i = state.inputs
   const cut = i.goal === 'Cut' || i.goal === 'Aggressive Cut'
   const warnGoal = (cut && i.goalWeightKg > i.startWeightKg) || (!cut && i.goalWeightKg < i.startWeightKg)
@@ -66,6 +66,13 @@ export default function Inputs() {
         <StatBox label={`Daily ${planRes.dailyDelta >= 0 ? 'surplus' : 'deficit'}`} value={`${fmt(planRes.dailyDelta, 0, true)} kcal`} rows={[{ k: 'Protein target', v: `${Math.round(planRes.proteinTarget)} g` }]} />
       </div>
       {planRes.cleanliness < 0.5 && <div style={{ marginTop: 14 }}><Pill tone="warn">⚠ Cleanliness below 50% — a lot of your change is the wrong kind. Tune the plan or modifiers.</Pill></div>}
+
+      {!state.onboarded && (
+        <div style={{ marginTop: 24 }}>
+          <button className="btn primary" style={{ fontSize: 15, padding: '13px 22px' }} onClick={() => { setOnboarded(true); setView('bodycomp') }}>✓ Start tracking →</button>
+          <div className="hint" style={{ marginTop: 8 }}>Next: set up your split in Gym Plan, then log day by day. You can change these inputs any time.</div>
+        </div>
+      )}
     </>
   )
 }

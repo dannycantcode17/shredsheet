@@ -29,19 +29,20 @@ const NAV = [
   ]},
 ]
 
-// Mobile bottom tab bar — five slots, with everything else behind "More"
+// Mobile bottom tab bar — five slots; Log (the daily habit) sits prominent in
+// the centre, everything else lives behind "More".
 const TABS = [
   { key: 'bodycomp', label: 'Body', icon: 'activity' },
   { key: 'calories', label: 'Calories', icon: 'flame' },
+  { key: 'daily', label: 'Log', icon: 'plus', emphasis: true },
   { key: 'gym', label: 'Gym', icon: 'dumbbell' },
-  { key: 'coach', label: 'Coach', icon: 'chat' },
   { key: 'more', label: 'More', icon: 'more' },
 ]
 const MORE = [
+  { key: 'coach', label: 'AI Coach', icon: 'chat', sub: 'Your live coach reads every number' },
+  { key: 'workout', label: 'Workout Log', icon: 'clipboard', sub: 'One row per set' },
   { key: 'inputs', label: 'Inputs', icon: 'sliders', sub: 'Who you are & what you’re chasing' },
-  { key: 'plan', label: 'Gym Plan', icon: 'clipboard', sub: 'Your training split & strength targets' },
-  { key: 'daily', label: 'Daily Log', icon: 'calendar', sub: 'Log calories, steps, weight day by day' },
-  { key: 'workout', label: 'Workout Log', icon: 'dumbbell', sub: 'One row per set' },
+  { key: 'plan', label: 'Gym Plan', icon: 'calendar', sub: 'Your training split & strength targets' },
   { key: 'settings', label: 'Settings', icon: 'settings', sub: 'AI key, backup & reset' },
 ]
 const MORE_KEYS = MORE.map(m => m.key)
@@ -106,9 +107,9 @@ export default function App() {
       </div>
       <nav className="tabbar" role="tablist" aria-label="Primary">
         {TABS.map(t => (
-          <button key={t.key} className={`tab ${tabActive === t.key ? 'active' : ''}`}
+          <button key={t.key} className={`tab ${t.emphasis ? 'emphasis' : ''} ${tabActive === t.key ? 'active' : ''}`}
             aria-current={tabActive === t.key ? 'page' : undefined} onClick={() => setView(t.key)}>
-            <Icon name={t.icon} />
+            <span className="tab-ic"><Icon name={t.icon} /></span>
             <span>{t.label}</span>
           </button>
         ))}

@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
 import { PageHead, Card, StatBox, Pill, fmt } from '../components/ui.jsx'
-import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import { epley1RM } from '../lib/engine.js'
+import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts'
 
 const axis = { stroke: 'rgba(244,244,245,0.4)', fontSize: 11 }
 const tip = { background: '#0f1c33', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, fontSize: 12 }
@@ -14,6 +15,7 @@ const SEGMENTS = [['overview', 'Overview'], ['lifts', 'Lifts'], ['volume', 'Volu
 export default function GymDash() {
   const { state, strength, planRes, daily } = useStore()
   const [seg, setSeg] = useState('overview')
+  const [selLift, setSelLift] = useState('')
   const dayNames = state.plan.filter(d => d.name).map(d => d.name)
   const key6 = strength.key6
   const noLifts = !key6.length
@@ -61,6 +63,22 @@ export default function GymDash() {
 
   const dl = Object.values(state.dailyLog).filter(x => ['cardioMins', 'steps', 'calories', 'protein', 'weight'].some(k => x[k] !== '' && x[k] != null))
   const mean = (sel) => dl.length ? dl.reduce((a, x) => a + (parseFloat(x[sel]) || 0), 0) / dl.length : 0
+
+  // ---- per-lift drill-down: best est. 1RM per day, over time ----
+  const liftNames = strength.exercises.map(e => e.name)
+  const activeLift = selLift && liftNames.includes(selLift) ? selLift : (key6[0]?.name || liftNames[0] || '')
+  const liftDetail = (() => {
+    const perDay = {}; let heaviest = 0
+    state.workoutLog.forEach(s => {
+      if (s.exercise !== activeLift || s.weight === '' || s.weight == null || s.reps === '' || s.reps == null) return
+      const e = epley1RM(s.weight, s.reps, s.rir)
+      if (perDay[s.date] == null || e > perDay[s.date]) perDay[s.date] = e
+      if (num(s.weight) > heaviest) heaviest = num(s.weight)
+    })
+    const data = Object.keys(perDay).sort().map(d => ({ date: d.slice(5), e1rm: Math.round(perDay[d] * 10) / 10 }))
+    const ex = strength.exercises.find(e => e.name === activeLift) || null
+    return { data, heaviest, ex, best: ex ? ex.max : (data.length ? Math.max(...data.map(p => p.e1rm)) : 0) }
+  })()
 
   return (
     <>
@@ -138,6 +156,27 @@ export default function GymDash() {
                     <Bar dataKey="Target" fill="#f0b34e" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer></div>
+              </Card>
+
+              <h2 className="section">Lift detail · est. 1RM over time</h2>
+              <Card>
+                <div style={{ marginBottom: 12 }}>
+                  <select value={activeLift} onChange={e => setSelLift(e.target.value)} style={{ maxWidth: 280 }}>
+                    {liftNames.map(nme => <option key={nme} value={nme}>{nme}</option>)}
+                  </select>
+                </div>
+                <div className="chart-wrap"><ResponsiveContainer>
+                  <LineChart data={liftDetail.data} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
+                    <CartesianGrid stroke={grid} /><XAxis dataKey="date" {...axis} /><YAxis {...axis} domain={['auto', 'auto']} /><Tooltip contentStyle={tip} />
+                    {liftDetail.ex?.target ? <ReferenceLine y={liftDetail.ex.target} stroke="#f0b34e" strokeDasharray="5 5" /> : null}
+                    <Line type="monotone" dataKey="e1rm" stroke="#5ad1c7" dot={{ r: 2 }} strokeWidth={2.4} connectNulls />
+                  </LineChart>
+                </ResponsiveContainer></div>
+                <div className="grid cols-3" style={{ marginTop: 4 }}>
+                  <StatBox label="Best est. 1RM" value={`${liftDetail.best || '–'}kg`} tone={liftDetail.ex?.hitTarget ? 'pos' : undefined} />
+                  <StatBox label="Heaviest set" value={`${liftDetail.heaviest || '–'}kg`} />
+                  <StatBox label="Target 1RM" value={liftDetail.ex?.target ? `${liftDetail.ex.target}kg` : '–'} rows={liftDetail.ex?.target ? [{ k: liftDetail.ex.hitTarget ? 'Hit ✓' : 'Not yet', v: '' }] : []} />
+                </div>
               </Card>
             </>
           )}

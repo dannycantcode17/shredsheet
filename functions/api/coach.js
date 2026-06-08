@@ -8,7 +8,7 @@ export async function onRequestPost(context) {
   }
   let body
   try { body = await request.json() } catch { return json({ error: 'Bad JSON' }, 400) }
-  const { messages = [], context: sys = '', model = 'claude-3-5-sonnet-20241022' } = body
+  const { messages = [], context: sys = '', model = 'claude-sonnet-4-6' } = body
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
