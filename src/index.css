@@ -333,3 +333,24 @@ a { color: var(--accent); }
   .stat .stat-row { margin-top: 8px; font-size: 12px; }
   .grid { gap: 12px; }
 }
+
+/* Workout logger (Gym tab) */
+.wk-tally { display: flex; align-items: center; justify-content: space-between; }
+.wk-count { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; color: var(--accent); }
+.wk-count-l { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); margin-top: 5px; }
+.wk-sec { display: flex; flex-direction: column; gap: 6px; text-align: right; font-size: 14px; color: var(--ink-soft); }
+.wk-days { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+.wk-day { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line-strong); background: rgba(255,255,255,0.04); color: var(--ink-soft); font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.wk-day.active { background: rgba(90,209,199,0.16); color: #d7fbf6; border-color: transparent; }
+.wk-add { margin-bottom: 16px; }
+.wk-last { font-size: 13px; color: var(--ink-soft); margin: -2px 0 12px; }
+.wk-we { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.wk-group { margin-bottom: 12px; }
+.wk-gh { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.wk-set { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
+.wk-set:first-of-type { border-top: none; }
+.wk-n { width: 22px; height: 22px; flex: 0 0 auto; border-radius: 50%; background: rgba(255,255,255,0.06); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; color: var(--ink-faint); }
+.wk-wr { font-weight: 600; font-size: 16px; }
+.wk-1rm { margin-left: auto; font-size: 12px; }
+.wk-x { padding: 6px 10px; }
+.wk-cardio { margin-top: 4px; }

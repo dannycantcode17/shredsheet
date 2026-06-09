@@ -3,7 +3,7 @@ import { useStore } from './state/store.jsx'
 import Inputs from './modules/Inputs.jsx'
 import GymPlan from './modules/GymPlan.jsx'
 import DailyLog from './modules/DailyLog.jsx'
-import WorkoutLog from './modules/WorkoutLog.jsx'
+import Workout from './modules/Workout.jsx'
 import BodycompDash from './modules/BodycompDash.jsx'
 import CaloriesDash from './modules/CaloriesDash.jsx'
 import GymDash from './modules/GymDash.jsx'
@@ -16,7 +16,7 @@ const NAV = [
   { group: 'Insights', items: [
     { key: 'bodycomp', ix: '5', label: 'Bodycomp Dash' },
     { key: 'calories', ix: '6', label: 'Calories' },
-    { key: 'gym', ix: '7', label: 'Gym Dash' },
+    { key: 'gymtrends', ix: '7', label: 'Gym Trends' },
     { key: 'coach', ix: '8', label: 'AI Coach' },
   ]},
   { group: 'Setup', items: [
@@ -25,7 +25,7 @@ const NAV = [
   ]},
   { group: 'Log', items: [
     { key: 'daily', ix: '3', label: 'Daily Log' },
-    { key: 'workout', ix: '4', label: 'Workout Log' },
+    { key: 'gym', ix: '4', label: 'Workout' },
   ]},
 ]
 
@@ -40,7 +40,7 @@ const TABS = [
 ]
 const MORE = [
   { key: 'coach', label: 'AI Coach', icon: 'chat', sub: 'Your live coach reads every number' },
-  { key: 'workout', label: 'Workout Log', icon: 'clipboard', sub: 'One row per set' },
+  { key: 'gymtrends', label: 'Gym Trends', icon: 'activity', sub: 'Strength, volume & consistency' },
   { key: 'inputs', label: 'Inputs', icon: 'sliders', sub: 'Who you are & what you’re chasing' },
   { key: 'plan', label: 'Gym Plan', icon: 'calendar', sub: 'Your training split & strength targets' },
   { key: 'settings', label: 'Settings', icon: 'settings', sub: 'AI key, backup & reset' },
@@ -96,10 +96,10 @@ export default function App() {
           {v === 'inputs' && <Inputs />}
           {v === 'plan' && <GymPlan />}
           {v === 'daily' && <DailyLog />}
-          {v === 'workout' && <WorkoutLog />}
           {v === 'bodycomp' && <BodycompDash />}
           {v === 'calories' && <CaloriesDash />}
-          {v === 'gym' && <GymDash />}
+          {v === 'gym' && <Workout />}
+          {v === 'gymtrends' && <GymDash />}
           {v === 'coach' && <AICoach />}
           {v === 'settings' && <Settings />}
           {v === 'more' && <MoreMenu setView={setView} />}
