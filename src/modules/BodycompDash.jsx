@@ -24,8 +24,8 @@ export default function BodycompDash() {
 
   return (
     <>
-      <PageHead eyebrow="Insights · 5" title="Bodycomp Dashboard" sub="Planned vs actual fat and muscle change over your period." />
-      {noData && <Card style={{ marginBottom: 18 }}><span className="muted">No daily data logged yet — the target lines are shown, your actual curves appear once you start logging in the Daily Log.</span></Card>}
+      <PageHead title="Bodycomp" sub="Planned vs actual — fat & muscle." />
+      {noData && <Card style={{ marginBottom: 14 }}><span className="muted">Log a few days and your actual curves appear over the targets.</span></Card>}
 
       <div className="grid cols-2">
         <Card>
@@ -58,7 +58,7 @@ export default function BodycompDash() {
       <div className="grid cols-3">
         <StatBox label="Muscle change (kg)" value={fmt(daily.cumMuscle, 2, true)} tone={daily.cumMuscle >= 0 ? 'pos' : 'neg'} rows={[{ k: 'Plan (period)', v: fmt(planRes.muscleChange, 1, true) }]} />
         <StatBox label="Fat change (kg)" value={fmt(daily.cumFat, 2, true)} tone={daily.cumFat <= 0 ? 'pos' : 'neg'} rows={[{ k: 'Plan (period)', v: fmt(planRes.fatChange, 1, true) }]} />
-        <StatBox label="Shred efficiency" value={`${Math.round(actualClean * 100)}%`} tone={actualClean >= 0.5 ? 'pos' : 'neg'} rows={[{ k: 'Plan', v: `${Math.round(planRes.cleanliness * 100)}%` }]} />
+        <StatBox label="Shred efficiency" value={`${Math.round(actualClean * 100)}%`} tone={actualClean >= 0.5 ? 'pos' : 'neg'} rows={[{ k: 'Plan', v: `${Math.round(planRes.cleanliness * 100)}%` }]} info="How clean your change is — the share that's the good kind (muscle up, fat down). 50%+ is solid." />
       </div>
     </>
   )

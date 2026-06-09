@@ -16,12 +16,12 @@ export default function CaloriesDash() {
 
   return (
     <>
-      <PageHead eyebrow="Insights · 6" title="Calories" sub="Energy in vs energy out — the engine behind your fat and muscle change." />
+      <PageHead title="Calories" sub="Energy in vs out." />
       {noData && <Card style={{ marginBottom: 18 }}><span className="muted">No calories logged yet — add your daily calories in the Daily Log and this fills in.</span></Card>}
 
       <div className="grid cols-3">
         <StatBox label="Avg calories" value={`${Math.round(daily.whole.avgCalories) || '–'}`} rows={[{ k: 'Target', v: `${Math.round(planRes.calorieTarget)}` }, { k: 'Last 7d', v: `${Math.round(daily.last7.avgCalories) || '–'}` }]} />
-        <StatBox label="Avg balance (kcal)" value={fmt(daily.whole.avgDeficit, 0, true)} tone={daily.whole.avgDeficit <= 0 ? 'pos' : 'neg'} rows={[{ k: 'Target', v: fmt(planRes.dailyDelta, 0, true) }, { k: 'Last 7d', v: fmt(daily.last7.avgDeficit, 0, true) }]} />
+        <StatBox label="Avg balance (kcal)" value={fmt(daily.whole.avgDeficit, 0, true)} tone={daily.whole.avgDeficit <= 0 ? 'pos' : 'neg'} rows={[{ k: 'Target', v: fmt(planRes.dailyDelta, 0, true) }, { k: 'Last 7d', v: fmt(daily.last7.avgDeficit, 0, true) }]} info="Average daily calories in minus out. Negative = deficit (fat loss); positive = surplus." />
         <StatBox label="Avg protein (g)" value={`${Math.round(daily.whole.avgProtein) || '–'}`} rows={[{ k: 'Target', v: `${Math.round(planRes.proteinTarget)}` }, { k: 'Last 7d', v: `${Math.round(daily.last7.avgProtein) || '–'}` }]} />
       </div>
 

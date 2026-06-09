@@ -82,7 +82,7 @@ export default function GymDash() {
 
   return (
     <>
-      <PageHead eyebrow="Insights · 7" title="Gym Dashboard" sub="Strength, volume and consistency — read straight from every set you log." />
+      <PageHead title="Gym" sub="Strength, volume & consistency." />
       {noLifts ? (
         <Card><span className="muted">No workouts logged yet — log sets in the Workout Log and your strength, volume and consistency tracking appear here.</span></Card>
       ) : (
@@ -97,7 +97,7 @@ export default function GymDash() {
             <>
               <div className="grid cols-3">
                 <StatBox label="Sessions logged" value={`${sessions}`} rows={[{ k: 'Per week', v: sessionsPerWeek.toFixed(1) }, { k: 'Target/wk', v: `${state.inputs.gymSessionsPerWeek}` }]} />
-                <StatBox label="Total volume lifted" value={tonnageLabel} rows={[{ k: 'Total sets', v: `${sets.length}` }, { k: 'Total reps', v: `${totalReps.toLocaleString()}` }]} />
+                <StatBox label="Total volume lifted" value={tonnageLabel} rows={[{ k: 'Total sets', v: `${sets.length}` }, { k: 'Total reps', v: `${totalReps.toLocaleString()}` }]} info="Total weight moved = weight × reps across every set you've logged (a.k.a. tonnage)." />
                 <StatBox label="Last session" value={daysSinceLast === 0 ? 'Today' : daysSinceLast === 1 ? '1 day ago' : `${daysSinceLast}d ago`} rows={[{ k: 'Date', v: lastDate ? lastDate.slice(5) : '–' }]} tone={daysSinceLast != null && daysSinceLast <= 2 ? 'pos' : daysSinceLast > 4 ? 'neg' : undefined} />
                 <StatBox label="Avg strength gain" value={`${fmt(strength.avgPctGain * 100, 0, true)}%`} tone={strength.avgPctGain >= 0 ? 'pos' : 'neg'} rows={[{ k: 'Across logged lifts', v: `${strength.exercises.length}` }]} />
                 <StatBox label="Sets / week" value={`${daily.whole.setsPerWeek.toFixed(1)}`} rows={[{ k: 'Plan', v: `${planRes.plannedSets}` }, { k: 'Last 7d', v: daily.last7.setsPerWeek.toFixed(1) }]} />

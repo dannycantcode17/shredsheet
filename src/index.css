@@ -315,3 +315,21 @@ a { color: var(--accent); }
 .dl-field input { padding: 9px 11px; }
 .dl-calc { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-faint); }
 .dl-calc b { color: var(--ink); font-weight: 600; margin-left: 5px; }
+
+/* Tap-to-explain on stat cards */
+.stat .stat-i {
+  margin-left: 7px; width: 16px; height: 16px; padding: 0; border-radius: 50%;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--ink-soft);
+  font-size: 10px; font-weight: 700; line-height: 1; font-style: italic; cursor: pointer;
+  vertical-align: middle; -webkit-tap-highlight-color: transparent;
+}
+.stat .stat-i:hover { border-color: var(--accent); color: var(--accent); }
+.stat .stat-info { margin-top: 8px; font-size: 12px; line-height: 1.45; color: var(--ink-soft); }
+
+/* Smaller KPI cards on the phone */
+@media (max-width: 900px) {
+  .card.tight { padding: 14px 16px; }
+  .stat .stat-value { font-size: 23px; margin-top: 4px; }
+  .stat .stat-row { margin-top: 8px; font-size: 12px; }
+  .grid { gap: 12px; }
+}
