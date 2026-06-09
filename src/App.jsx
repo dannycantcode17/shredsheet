@@ -6,6 +6,7 @@ import DailyLog from './modules/DailyLog.jsx'
 import Workout from './modules/Workout.jsx'
 import BodycompDash from './modules/BodycompDash.jsx'
 import CaloriesDash from './modules/CaloriesDash.jsx'
+import FoodLog from './modules/FoodLog.jsx'
 import GymDash from './modules/GymDash.jsx'
 import AICoach from './modules/AICoach.jsx'
 import Settings from './modules/Settings.jsx'
@@ -15,7 +16,7 @@ import { Icon } from './components/icons.jsx'
 const NAV = [
   { group: 'Insights', items: [
     { key: 'bodycomp', ix: '5', label: 'Bodycomp Dash' },
-    { key: 'calories', ix: '6', label: 'Calories' },
+    { key: 'calories', ix: '6', label: 'Calories Trends' },
     { key: 'gymtrends', ix: '7', label: 'Gym Trends' },
     { key: 'coach', ix: '8', label: 'AI Coach' },
   ]},
@@ -24,8 +25,9 @@ const NAV = [
     { key: 'plan', ix: '2', label: 'Gym Plan' },
   ]},
   { group: 'Log', items: [
-    { key: 'daily', ix: '3', label: 'Daily Log' },
-    { key: 'gym', ix: '4', label: 'Workout' },
+    { key: 'food', ix: '3', label: 'Food' },
+    { key: 'daily', ix: '4', label: 'Daily Log' },
+    { key: 'gym', ix: '5', label: 'Workout' },
   ]},
 ]
 
@@ -33,13 +35,14 @@ const NAV = [
 // the centre, everything else lives behind "More".
 const TABS = [
   { key: 'bodycomp', label: 'Body', icon: 'activity' },
-  { key: 'calories', label: 'Calories', icon: 'flame' },
+  { key: 'food', label: 'Food', icon: 'flame' },
   { key: 'daily', label: 'Log', icon: 'plus', emphasis: true },
   { key: 'gym', label: 'Gym', icon: 'dumbbell' },
   { key: 'more', label: 'More', icon: 'more' },
 ]
 const MORE = [
   { key: 'coach', label: 'AI Coach', icon: 'chat', sub: 'Your live coach reads every number' },
+  { key: 'calories', label: 'Calories Trends', icon: 'activity', sub: 'Energy in vs out over time' },
   { key: 'gymtrends', label: 'Gym Trends', icon: 'activity', sub: 'Strength, volume & consistency' },
   { key: 'inputs', label: 'Inputs', icon: 'sliders', sub: 'Who you are & what you’re chasing' },
   { key: 'plan', label: 'Gym Plan', icon: 'calendar', sub: 'Your training split & strength targets' },
@@ -96,6 +99,7 @@ export default function App() {
           {v === 'inputs' && <Inputs />}
           {v === 'plan' && <GymPlan />}
           {v === 'daily' && <DailyLog />}
+          {v === 'food' && <FoodLog />}
           {v === 'bodycomp' && <BodycompDash />}
           {v === 'calories' && <CaloriesDash />}
           {v === 'gym' && <Workout />}
