@@ -21,6 +21,21 @@ export const Field = ({ label, hint, children }) => (
 
 export const Pill = ({ tone = 'muted', children }) => <span className={`pill ${tone}`}>{children}</span>
 
+// Friendly, inclusive labels for the goal modes. KEYS are the engine's stored
+// values (do not change them) — these are display-only.
+export const GOAL_LABEL = {
+  'Cut': 'Lose fat',
+  'Aggressive Cut': 'Lose fat (faster)',
+  'Lean Bulk': 'Build muscle, stay lean',
+  'Bulk': 'Build muscle & size',
+}
+export const GOAL_SUB = {
+  'Cut': 'Drop body fat, keep your muscle',
+  'Aggressive Cut': 'Quicker fat loss, a steeper deficit',
+  'Lean Bulk': 'Gain muscle while keeping fat in check',
+  'Bulk': 'Maximise size, accept a little fat',
+}
+
 export const fmt = (x, dp = 1, signed = false) => {
   if (x == null || Number.isNaN(x)) return '–'
   const v = Number(x).toFixed(dp)

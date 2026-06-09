@@ -8,6 +8,7 @@ import FoodLog from './modules/FoodLog.jsx'
 import DataDash from './modules/DataDash.jsx'
 import AICoach from './modules/AICoach.jsx'
 import Settings from './modules/Settings.jsx'
+import Configurator from './modules/Configurator.jsx'
 import { Icon } from './components/icons.jsx'
 
 // Desktop sidebar grouping
@@ -19,6 +20,7 @@ const NAV = [
   { group: 'Setup', items: [
     { key: 'inputs', ix: '1', label: 'Inputs' },
     { key: 'plan', ix: '2', label: 'Gym Plan' },
+    { key: 'configure', ix: '↻', label: 'Reconfigure' },
   ]},
   { group: 'Log', items: [
     { key: 'food', ix: '3', label: 'Food' },
@@ -38,6 +40,7 @@ const TABS = [
 ]
 const MORE = [
   { key: 'coach', label: 'AI Coach', icon: 'chat', sub: 'Your live coach reads every number' },
+  { key: 'configure', label: 'Reconfigure', icon: 'clipboard', sub: 'Rebuild your setup from scratch' },
   { key: 'inputs', label: 'Inputs', icon: 'sliders', sub: 'Who you are & what you’re chasing' },
   { key: 'plan', label: 'Gym Plan', icon: 'calendar', sub: 'Your training split & strength targets' },
   { key: 'settings', label: 'Settings', icon: 'settings', sub: 'AI key, backup & reset' },
@@ -65,8 +68,11 @@ function MoreMenu({ setView }) {
 }
 
 export default function App() {
-  const { view, setView } = useStore()
+  const { state, view, setView } = useStore()
   const v = view === 'dashboard' ? 'data' : view
+  // First run (no data yet) opens the configurator; "Reconfigure" re-enters it.
+  const seen = state.onboarded || Object.keys(state.dailyLog || {}).length > 0 || (state.workoutLog || []).length > 0
+  if (!seen || v === 'configure') return <div className="app-root"><Configurator /></div>
   const tabActive = MORE_KEYS.includes(v) ? 'more' : v
   return (
     <div className="app-root">
