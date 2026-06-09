@@ -12,7 +12,7 @@ const num = (v, d = 0) => { const x = parseFloat(v); return Number.isFinite(x) ?
 
 const SEGMENTS = [['overview', 'Overview'], ['lifts', 'Lifts'], ['volume', 'Volume']]
 
-export default function GymDash() {
+export default function GymDash({ embedded }) {
   const { state, strength, planRes, daily } = useStore()
   const [seg, setSeg] = useState('overview')
   const [selLift, setSelLift] = useState('')
@@ -82,7 +82,7 @@ export default function GymDash() {
 
   return (
     <>
-      <PageHead title="Gym" sub="Strength, volume & consistency." />
+      {!embedded && <PageHead title="Gym" sub="Strength, volume & consistency." />}
       {noLifts ? (
         <Card><span className="muted">No workouts logged yet — log sets in the Workout Log and your strength, volume and consistency tracking appear here.</span></Card>
       ) : (

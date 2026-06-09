@@ -370,3 +370,14 @@ a { color: var(--accent); }
 .fd-meal-name { font-weight: 600; font-size: 15px; }
 .fd-meal-sub { font-size: 12.5px; color: var(--ink-faint); margin-top: 2px; }
 .fd-x { padding: 6px 10px; flex: 0 0 auto; }
+
+/* Data tab — pop-up view picker */
+.data-head { position: relative; margin: 2px 0 10px; }
+.data-picker { display: inline-flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; color: var(--ink); font: inherit; font-weight: 700; letter-spacing: -0.025em; font-size: clamp(28px, 5vw, 44px); line-height: 1.05; padding: 0; }
+.data-chev { display: inline-flex; color: var(--ink-faint); }
+.data-chev svg { width: 22px; height: 22px; transform: rotate(90deg); }
+.data-scrim { position: fixed; inset: 0; z-index: 40; }
+.data-menu { position: absolute; top: 100%; left: 0; z-index: 41; margin-top: 8px; min-width: 210px; background: var(--glass-2); backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%); border: 1px solid var(--line-strong); border-radius: 14px; padding: 6px; box-shadow: 0 14px 44px rgba(0,0,0,0.45); display: flex; flex-direction: column; gap: 2px; }
+.data-mi { text-align: left; background: none; border: none; color: var(--ink-soft); font: inherit; font-size: 15px; font-weight: 600; padding: 11px 14px; border-radius: 9px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.data-mi:hover { background: rgba(255,255,255,0.05); color: var(--ink); }
+.data-mi.active { background: rgba(90,209,199,0.16); color: #d7fbf6; }

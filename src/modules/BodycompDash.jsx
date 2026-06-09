@@ -8,51 +8,45 @@ const axis = { stroke: 'rgba(244,244,245,0.4)', fontSize: 11 }
 const tip = { background: '#0f1c33', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, fontSize: 12 }
 const grid = 'rgba(255,255,255,0.06)'
 
-export default function BodycompDash() {
+export default function BodycompDash({ embedded }) {
   const { planRes, daily } = useStore()
   const days = planRes.days
   const lastLogged = daily.rows.reduce((m, r) => (r.logged ? r.dayNum : m), 0)
+  // Combined Shred Curve: muscle rises above zero, fat falls below it — same kg axis.
   const curve = daily.rows.map(r => ({
     day: r.dayNum,
-    fatActual: r.dayNum <= lastLogged ? -r.cumFat : null,
-    fatTarget: (-planRes.fatChange) * (r.dayNum / days),
     muscleActual: r.dayNum <= lastLogged ? r.cumMuscle : null,
     muscleTarget: planRes.muscleChange * (r.dayNum / days),
+    fatActual: r.dayNum <= lastLogged ? r.cumFat : null, // negative = fat lost → trends down
+    fatTarget: planRes.fatChange * (r.dayNum / days),
   }))
   const actualClean = cleanliness(daily.cumWeight, daily.cumFat, daily.cumMuscle)
   const noData = lastLogged === 0
 
   return (
     <>
-      <PageHead title="Bodycomp" sub="Planned vs actual — fat & muscle." />
+      {!embedded && <PageHead title="Bodycomp" sub="Planned vs actual — fat & muscle." />}
       {noData && <Card style={{ marginBottom: 14 }}><span className="muted">Log a few days and your actual curves appear over the targets.</span></Card>}
 
-      <div className="grid cols-2">
-        <Card>
-          <div className="eyebrow">Shred Curve · Fat (loss shown positive)</div>
-          <div className="chart-wrap"><ResponsiveContainer>
-            <LineChart data={curve} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-              <CartesianGrid stroke={grid} /><XAxis dataKey="day" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} />
-              <ReferenceLine x={lastLogged || null} stroke="rgba(255,255,255,0.35)" strokeDasharray="4 4" />
-              <Line type="monotone" dataKey="fatTarget" stroke="#5aa9ff" strokeDasharray="5 5" dot={false} strokeWidth={2} />
-              <Line type="monotone" dataKey="fatActual" stroke="#5aa9ff" dot={false} strokeWidth={2.5} connectNulls />
-            </LineChart>
-          </ResponsiveContainer></div>
-          <div className="legend"><span className="key"><span className="swatch" style={{ background: '#5aa9ff' }} />Actual</span><span className="key"><span className="swatch" style={{ background: '#5aa9ff', opacity: .5 }} />Target</span></div>
-        </Card>
-        <Card>
-          <div className="eyebrow">Shred Curve · Muscle</div>
-          <div className="chart-wrap"><ResponsiveContainer>
-            <LineChart data={curve} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-              <CartesianGrid stroke={grid} /><XAxis dataKey="day" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} />
-              <ReferenceLine x={lastLogged || null} stroke="rgba(255,255,255,0.35)" strokeDasharray="4 4" />
-              <Line type="monotone" dataKey="muscleTarget" stroke="#57e08b" strokeDasharray="5 5" dot={false} strokeWidth={2} />
-              <Line type="monotone" dataKey="muscleActual" stroke="#57e08b" dot={false} strokeWidth={2.5} connectNulls />
-            </LineChart>
-          </ResponsiveContainer></div>
-          <div className="legend"><span className="key"><span className="swatch" style={{ background: '#57e08b' }} />Actual</span><span className="key"><span className="swatch" style={{ background: '#57e08b', opacity: .5 }} />Target</span></div>
-        </Card>
-      </div>
+      <Card>
+        <div className="eyebrow">Shred Curve · muscle up, fat down (kg)</div>
+        <div className="chart-wrap"><ResponsiveContainer>
+          <LineChart data={curve} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
+            <CartesianGrid stroke={grid} /><XAxis dataKey="day" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} />
+            <ReferenceLine y={0} stroke="rgba(255,255,255,0.22)" />
+            <ReferenceLine x={lastLogged || null} stroke="rgba(255,255,255,0.35)" strokeDasharray="4 4" />
+            <Line type="monotone" dataKey="muscleTarget" stroke="#57e08b" strokeDasharray="5 5" dot={false} strokeWidth={2} />
+            <Line type="monotone" dataKey="muscleActual" stroke="#57e08b" dot={false} strokeWidth={2.6} connectNulls />
+            <Line type="monotone" dataKey="fatTarget" stroke="#5aa9ff" strokeDasharray="5 5" dot={false} strokeWidth={2} />
+            <Line type="monotone" dataKey="fatActual" stroke="#5aa9ff" dot={false} strokeWidth={2.6} connectNulls />
+          </LineChart>
+        </ResponsiveContainer></div>
+        <div className="legend">
+          <span className="key"><span className="swatch" style={{ background: '#57e08b' }} />Muscle</span>
+          <span className="key"><span className="swatch" style={{ background: '#5aa9ff' }} />Fat</span>
+          <span className="key"><span className="swatch" style={{ background: 'rgba(255,255,255,0.45)' }} />Target (dashed)</span>
+        </div>
+      </Card>
 
       <h2 className="section">Plan vs actual</h2>
       <div className="grid cols-3">

@@ -4,10 +4,8 @@ import Inputs from './modules/Inputs.jsx'
 import GymPlan from './modules/GymPlan.jsx'
 import DailyLog from './modules/DailyLog.jsx'
 import Workout from './modules/Workout.jsx'
-import BodycompDash from './modules/BodycompDash.jsx'
-import CaloriesDash from './modules/CaloriesDash.jsx'
 import FoodLog from './modules/FoodLog.jsx'
-import GymDash from './modules/GymDash.jsx'
+import DataDash from './modules/DataDash.jsx'
 import AICoach from './modules/AICoach.jsx'
 import Settings from './modules/Settings.jsx'
 import { Icon } from './components/icons.jsx'
@@ -15,10 +13,8 @@ import { Icon } from './components/icons.jsx'
 // Desktop sidebar grouping
 const NAV = [
   { group: 'Insights', items: [
-    { key: 'bodycomp', ix: '5', label: 'Bodycomp Dash' },
-    { key: 'calories', ix: '6', label: 'Calories Trends' },
-    { key: 'gymtrends', ix: '7', label: 'Gym Trends' },
-    { key: 'coach', ix: '8', label: 'AI Coach' },
+    { key: 'data', ix: '5', label: 'Data' },
+    { key: 'coach', ix: '6', label: 'AI Coach' },
   ]},
   { group: 'Setup', items: [
     { key: 'inputs', ix: '1', label: 'Inputs' },
@@ -34,7 +30,7 @@ const NAV = [
 // Mobile bottom tab bar — five slots; Log (the daily habit) sits prominent in
 // the centre, everything else lives behind "More".
 const TABS = [
-  { key: 'bodycomp', label: 'Body', icon: 'activity' },
+  { key: 'data', label: 'Data', icon: 'activity' },
   { key: 'food', label: 'Food', icon: 'flame' },
   { key: 'daily', label: 'Log', icon: 'plus', emphasis: true },
   { key: 'gym', label: 'Gym', icon: 'dumbbell' },
@@ -42,8 +38,6 @@ const TABS = [
 ]
 const MORE = [
   { key: 'coach', label: 'AI Coach', icon: 'chat', sub: 'Your live coach reads every number' },
-  { key: 'calories', label: 'Calories Trends', icon: 'activity', sub: 'Energy in vs out over time' },
-  { key: 'gymtrends', label: 'Gym Trends', icon: 'activity', sub: 'Strength, volume & consistency' },
   { key: 'inputs', label: 'Inputs', icon: 'sliders', sub: 'Who you are & what you’re chasing' },
   { key: 'plan', label: 'Gym Plan', icon: 'calendar', sub: 'Your training split & strength targets' },
   { key: 'settings', label: 'Settings', icon: 'settings', sub: 'AI key, backup & reset' },
@@ -72,7 +66,7 @@ function MoreMenu({ setView }) {
 
 export default function App() {
   const { view, setView } = useStore()
-  const v = view === 'dashboard' ? 'bodycomp' : view
+  const v = view === 'dashboard' ? 'data' : view
   const tabActive = MORE_KEYS.includes(v) ? 'more' : v
   return (
     <div className="app-root">
@@ -100,10 +94,8 @@ export default function App() {
           {v === 'plan' && <GymPlan />}
           {v === 'daily' && <DailyLog />}
           {v === 'food' && <FoodLog />}
-          {v === 'bodycomp' && <BodycompDash />}
-          {v === 'calories' && <CaloriesDash />}
+          {v === 'data' && <DataDash />}
           {v === 'gym' && <Workout />}
-          {v === 'gymtrends' && <GymDash />}
           {v === 'coach' && <AICoach />}
           {v === 'settings' && <Settings />}
           {v === 'more' && <MoreMenu setView={setView} />}

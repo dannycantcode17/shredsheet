@@ -7,7 +7,7 @@ const axis = { stroke: 'rgba(244,244,245,0.4)', fontSize: 11 }
 const tip = { background: '#0f1c33', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, fontSize: 12 }
 const grid = 'rgba(255,255,255,0.06)'
 
-export default function CaloriesDash() {
+export default function CaloriesDash({ embedded }) {
   const { planRes, daily } = useStore()
   const calData = daily.rows
     .filter(r => r.logged && r.consumed)
@@ -16,7 +16,7 @@ export default function CaloriesDash() {
 
   return (
     <>
-      <PageHead title="Calories" sub="Energy in vs out." />
+      {!embedded && <PageHead title="Calories" sub="Energy in vs out." />}
       {noData && <Card style={{ marginBottom: 18 }}><span className="muted">No calories logged yet — add your daily calories in the Daily Log and this fills in.</span></Card>}
 
       <div className="grid cols-3">
