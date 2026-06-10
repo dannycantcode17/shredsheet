@@ -340,34 +340,10 @@ export default function Configurator() {
       eyebrow: 'The Shredsheet',
       render: () => (
         <>
-          <h1 className="cfg-q">Log it. Coach reads it.<br />You get the move.</h1>
-          <div className="cfg-loop">
-            <div className="cfg-loop-step">
-              <div className="l-ico">📝</div>
-              <div>
-                <div className="l-title">You log</div>
-                <div className="l-sub">Yesterday's food, steps and lifts. Ten seconds, done.</div>
-              </div>
-            </div>
-            <div className="cfg-loop-arrow">↓</div>
-            <div className="cfg-loop-step">
-              <div className="l-ico">🧠</div>
-              <div>
-                <div className="l-title">Your coach reads everything</div>
-                <div className="l-sub">Every number, instantly. No squinting at spreadsheets.</div>
-              </div>
-            </div>
-            <div className="cfg-loop-arrow">↓</div>
-            <div className="cfg-loop-step">
-              <div className="l-ico">💡</div>
-              <div>
-                <div className="l-title">You get the insight</div>
-                <div className="l-sub">One clear move for the week ahead. That's the whole game.</div>
-              </div>
-            </div>
+          <div className="cfg-hero">
+            <h1 className="cfg-hero-title">Log it.<br />Coach reads it.<br />You get the move.</h1>
+            <p className="cfg-hero-lede">Let's build your system — a few quick questions, one at a time. Your coach joins the moment it's set.</p>
           </div>
-          <p className="cfg-lede">First we build your system — who you are, what you're chasing. One quick question at a time.</p>
-          <div className="cfg-signpost"><span className="ico">🔒</span><span>Your coach joins once your system is set — no point coaching a blank sheet.</span></div>
         </>
       ),
     },
