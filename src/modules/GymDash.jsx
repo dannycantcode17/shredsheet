@@ -1,19 +1,16 @@
 import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
-import { PageHead, Card, StatBox, Pill, fmt } from '../components/ui.jsx'
+import { PageHead, Card, StatBox, Pill, EmptyState, fmt } from '../components/ui.jsx'
 import { epley1RM } from '../lib/engine.js'
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts'
+import { axisProps, gridProps, tooltipProps, ChartDefs, C, SERIES } from '../components/chart.jsx'
 
-const axis = { stroke: 'rgba(244,244,245,0.4)', fontSize: 11 }
-const tip = { background: '#0f1c33', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, fontSize: 12 }
-const grid = 'rgba(255,255,255,0.06)'
-const LINE_COLORS = ['#5ad1c7', '#5aa9ff', '#57e08b', '#f0b34e', '#f06fa8', '#b79cff']
 const num = (v, d = 0) => { const x = parseFloat(v); return Number.isFinite(x) ? x : d }
 
 const SEGMENTS = [['overview', 'Overview'], ['lifts', 'Lifts'], ['volume', 'Volume']]
 
 export default function GymDash({ embedded }) {
-  const { state, strength, planRes, daily } = useStore()
+  const { state, strength, planRes, daily, setView } = useStore()
   const [seg, setSeg] = useState('overview')
   const [selLift, setSelLift] = useState('')
   const dayNames = state.plan.filter(d => d.name).map(d => d.name)
@@ -84,7 +81,9 @@ export default function GymDash({ embedded }) {
     <>
       {!embedded && <PageHead title="Gym" sub="Strength, volume & consistency." />}
       {noLifts ? (
-        <Card><span className="muted">No workouts logged yet — log sets in the Workout Log and your strength, volume and consistency tracking appear here.</span></Card>
+        <EmptyState icon="dumbbell" title="No workouts yet"
+          sub="Log your first sets and your strength, volume and consistency tracking light up here."
+          action="Log a workout" onAction={() => setView('gym')} />
       ) : (
         <>
           <div className="segmented" role="tablist" aria-label="Gym views">
@@ -108,8 +107,9 @@ export default function GymDash({ embedded }) {
               <Card>
                 <div className="chart-wrap"><ResponsiveContainer>
                   <BarChart data={splitData} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-                    <CartesianGrid stroke={grid} /><XAxis dataKey="name" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} />
-                    <Bar dataKey="sets" fill="#5ad1c7" radius={[6, 6, 0, 0]} />
+                    <ChartDefs />
+                    <CartesianGrid {...gridProps} /><XAxis dataKey="name" {...axisProps} /><YAxis {...axisProps} /><Tooltip {...tooltipProps} />
+                    <Bar dataKey="sets" fill="url(#grad-accent)" radius={[8, 8, 2, 2]} maxBarSize={56} />
                   </BarChart>
                 </ResponsiveContainer></div>
               </Card>
@@ -119,11 +119,11 @@ export default function GymDash({ embedded }) {
           {seg === 'lifts' && (
             <>
               <Card>
-                <div className="eyebrow">Strength Curve · estimated 1RM by set count</div>
+                <div className="chart-title">Strength curve · <b>estimated 1RM by set count</b></div>
                 <div className="chart-wrap"><ResponsiveContainer>
                   <LineChart data={curve} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-                    <CartesianGrid stroke={grid} /><XAxis dataKey="set" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} /><Legend wrapperStyle={{ fontSize: 11 }} />
-                    {key6.map((e, i) => <Line key={e.name} type="monotone" dataKey={e.name} stroke={LINE_COLORS[i % LINE_COLORS.length]} dot={false} strokeWidth={2.2} connectNulls />)}
+                    <CartesianGrid {...gridProps} /><XAxis dataKey="set" {...axisProps} /><YAxis {...axisProps} /><Tooltip {...tooltipProps} /><Legend wrapperStyle={{ fontSize: 11 }} />
+                    {key6.map((e, i) => <Line key={e.name} type="monotone" dataKey={e.name} stroke={SERIES[i % SERIES.length]} dot={false} strokeWidth={2.2} connectNulls />)}
                   </LineChart>
                 </ResponsiveContainer></div>
               </Card>
@@ -150,10 +150,11 @@ export default function GymDash({ embedded }) {
               <Card>
                 <div className="chart-wrap"><ResponsiveContainer>
                   <BarChart data={liftBars} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-                    <CartesianGrid stroke={grid} /><XAxis dataKey="name" {...axis} interval={0} angle={-15} textAnchor="end" height={50} /><YAxis {...axis} /><Tooltip contentStyle={tip} /><Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="First" fill="rgba(255,255,255,0.3)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Max" fill="#5ad1c7" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Target" fill="#f0b34e" radius={[4, 4, 0, 0]} />
+                    <CartesianGrid {...gridProps} /><XAxis dataKey="name" {...axisProps} interval={0} angle={-15} textAnchor="end" height={50} /><YAxis {...axisProps} /><Tooltip {...tooltipProps} /><Legend wrapperStyle={{ fontSize: 11 }} />
+                    <ChartDefs />
+                    <Bar dataKey="First" fill={C.ghost} radius={[5, 5, 1, 1]} />
+                    <Bar dataKey="Max" fill="url(#grad-accent)" radius={[5, 5, 1, 1]} />
+                    <Bar dataKey="Target" fill="url(#grad-warn)" radius={[5, 5, 1, 1]} />
                   </BarChart>
                 </ResponsiveContainer></div>
               </Card>
@@ -167,9 +168,9 @@ export default function GymDash({ embedded }) {
                 </div>
                 <div className="chart-wrap"><ResponsiveContainer>
                   <LineChart data={liftDetail.data} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-                    <CartesianGrid stroke={grid} /><XAxis dataKey="date" {...axis} /><YAxis {...axis} domain={['auto', 'auto']} /><Tooltip contentStyle={tip} />
-                    {liftDetail.ex?.target ? <ReferenceLine y={liftDetail.ex.target} stroke="#f0b34e" strokeDasharray="5 5" /> : null}
-                    <Line type="monotone" dataKey="e1rm" stroke="#5ad1c7" dot={{ r: 2 }} strokeWidth={2.4} connectNulls />
+                    <CartesianGrid {...gridProps} /><XAxis dataKey="date" {...axisProps} /><YAxis {...axisProps} domain={['auto', 'auto']} /><Tooltip {...tooltipProps} />
+                    {liftDetail.ex?.target ? <ReferenceLine y={liftDetail.ex.target} stroke={C.warn} strokeDasharray="5 5" /> : null}
+                    <Line type="monotone" dataKey="e1rm" stroke={C.accent} dot={{ r: 2.5, fill: C.accent, strokeWidth: 0 }} strokeWidth={2.6} connectNulls />
                   </LineChart>
                 </ResponsiveContainer></div>
                 <div className="grid cols-3" style={{ marginTop: 4 }}>
@@ -184,11 +185,12 @@ export default function GymDash({ embedded }) {
           {seg === 'volume' && (
             <>
               <Card>
-                <div className="eyebrow">Tonnage per week · total kg moved (weight × reps)</div>
+                <div className="chart-title">Tonnage per week · <b>total kg moved (weight × reps)</b></div>
                 <div className="chart-wrap"><ResponsiveContainer>
                   <BarChart data={weekData} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-                    <CartesianGrid stroke={grid} /><XAxis dataKey="week" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} />
-                    <Bar dataKey="tonnage" fill="#5aa9ff" radius={[6, 6, 0, 0]} />
+                    <ChartDefs />
+                    <CartesianGrid {...gridProps} /><XAxis dataKey="week" {...axisProps} /><YAxis {...axisProps} /><Tooltip {...tooltipProps} />
+                    <Bar dataKey="tonnage" fill="url(#grad-fat)" radius={[8, 8, 2, 2]} maxBarSize={56} />
                   </BarChart>
                 </ResponsiveContainer></div>
               </Card>
@@ -197,8 +199,9 @@ export default function GymDash({ embedded }) {
               <Card>
                 <div className="chart-wrap"><ResponsiveContainer>
                   <BarChart data={weekData} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-                    <CartesianGrid stroke={grid} /><XAxis dataKey="week" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} />
-                    <Bar dataKey="sets" fill="#57e08b" radius={[6, 6, 0, 0]} />
+                    <ChartDefs />
+                    <CartesianGrid {...gridProps} /><XAxis dataKey="week" {...axisProps} /><YAxis {...axisProps} /><Tooltip {...tooltipProps} />
+                    <Bar dataKey="sets" fill="url(#grad-muscle)" radius={[8, 8, 2, 2]} maxBarSize={56} />
                   </BarChart>
                 </ResponsiveContainer></div>
               </Card>
@@ -207,8 +210,8 @@ export default function GymDash({ embedded }) {
               <Card>
                 <div className="chart-wrap"><ResponsiveContainer>
                   <LineChart data={weekData} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-                    <CartesianGrid stroke={grid} /><XAxis dataKey="week" {...axis} /><YAxis {...axis} allowDecimals /><Tooltip contentStyle={tip} />
-                    <Line type="monotone" dataKey="rir" stroke="#f0b34e" dot={{ r: 2 }} strokeWidth={2.4} connectNulls />
+                    <CartesianGrid {...gridProps} /><XAxis dataKey="week" {...axisProps} /><YAxis {...axisProps} allowDecimals /><Tooltip {...tooltipProps} />
+                    <Line type="monotone" dataKey="rir" stroke={C.warn} dot={{ r: 2.5, fill: C.warn, strokeWidth: 0 }} strokeWidth={2.6} connectNulls />
                   </LineChart>
                 </ResponsiveContainer></div>
                 <div className="legend"><span className="faint">Lower RIR = training closer to failure.</span></div>

@@ -31,7 +31,7 @@ export default function DailyLog() {
 
   return (
     <>
-      <PageHead eyebrow="Log · 3" title="Daily Log" sub="Your daily journal — log yesterday's numbers and the calculated values update as you go." />
+      <PageHead eyebrow="Log" title="Daily Log" sub="Your daily journal — log yesterday's numbers and the calculated values update as you go." />
 
       {/* Mobile: a card per day, newest first */}
       <div className="only-mobile dl-cards">

@@ -1,15 +1,12 @@
 import React from 'react'
 import { useStore } from '../state/store.jsx'
-import { PageHead, Card, StatBox, fmt } from '../components/ui.jsx'
+import { PageHead, Card, StatBox, EmptyState, fmt } from '../components/ui.jsx'
 import { cleanliness } from '../lib/engine.js'
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts'
-
-const axis = { stroke: 'rgba(244,244,245,0.4)', fontSize: 11 }
-const tip = { background: '#0f1c33', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, fontSize: 12 }
-const grid = 'rgba(255,255,255,0.06)'
+import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts'
+import { axisProps, gridProps, tooltipProps, ChartDefs, C } from '../components/chart.jsx'
 
 export default function BodycompDash({ embedded }) {
-  const { planRes, daily } = useStore()
+  const { planRes, daily, setView } = useStore()
   const days = planRes.days
   const lastLogged = daily.rows.reduce((m, r) => (r.logged ? r.dayNum : m), 0)
   // Combined Shred Curve: muscle rises above zero, fat falls below it — same kg axis.
@@ -26,25 +23,33 @@ export default function BodycompDash({ embedded }) {
   return (
     <>
       {!embedded && <PageHead title="Bodycomp" sub="Planned vs actual — fat & muscle." />}
-      {noData && <Card style={{ marginBottom: 14 }}><span className="muted">Log a few days and your actual curves appear over the targets.</span></Card>}
+      {noData && (
+        <div style={{ marginBottom: 14 }}>
+          <EmptyState icon="trend" title="Your curves start here"
+            sub="Log a few days of weight and calories and your actual fat & muscle lines draw themselves over the targets."
+            action="Open the Daily Log" onAction={() => setView('daily')} />
+        </div>
+      )}
 
       <Card>
-        <div className="eyebrow">Shred Curve · muscle up, fat down (kg)</div>
+        <div className="chart-title">Shred curve · <b>muscle up, fat down (kg)</b></div>
         <div className="chart-wrap"><ResponsiveContainer>
-          <LineChart data={curve} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
-            <CartesianGrid stroke={grid} /><XAxis dataKey="day" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tip} />
-            <ReferenceLine y={0} stroke="rgba(255,255,255,0.22)" />
-            <ReferenceLine x={lastLogged || null} stroke="rgba(255,255,255,0.35)" strokeDasharray="4 4" />
-            <Line type="monotone" dataKey="muscleTarget" stroke="#57e08b" strokeDasharray="5 5" dot={false} strokeWidth={2} />
-            <Line type="monotone" dataKey="muscleActual" stroke="#57e08b" dot={false} strokeWidth={2.6} connectNulls />
-            <Line type="monotone" dataKey="fatTarget" stroke="#5aa9ff" strokeDasharray="5 5" dot={false} strokeWidth={2} />
-            <Line type="monotone" dataKey="fatActual" stroke="#5aa9ff" dot={false} strokeWidth={2.6} connectNulls />
-          </LineChart>
+          {/* actuals get a soft gradient fill so they read as "real" against the dashed plan */}
+          <ComposedChart data={curve} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
+            <ChartDefs />
+            <CartesianGrid {...gridProps} /><XAxis dataKey="day" {...axisProps} /><YAxis {...axisProps} /><Tooltip {...tooltipProps} />
+            <ReferenceLine y={0} stroke="rgba(226,233,245,0.2)" />
+            <ReferenceLine x={lastLogged || null} stroke="rgba(226,233,245,0.3)" strokeDasharray="4 4" />
+            <Line type="monotone" dataKey="muscleTarget" stroke={C.muscle} strokeDasharray="5 5" strokeOpacity={0.55} dot={false} strokeWidth={1.8} />
+            <Area type="monotone" dataKey="muscleActual" stroke={C.muscle} fill="url(#area-muscle)" dot={false} strokeWidth={2.6} connectNulls />
+            <Line type="monotone" dataKey="fatTarget" stroke={C.fat} strokeDasharray="5 5" strokeOpacity={0.55} dot={false} strokeWidth={1.8} />
+            <Area type="monotone" dataKey="fatActual" stroke={C.fat} fill="url(#area-fat)" dot={false} strokeWidth={2.6} connectNulls />
+          </ComposedChart>
         </ResponsiveContainer></div>
         <div className="legend">
-          <span className="key"><span className="swatch" style={{ background: '#57e08b' }} />Muscle</span>
-          <span className="key"><span className="swatch" style={{ background: '#5aa9ff' }} />Fat</span>
-          <span className="key"><span className="swatch" style={{ background: 'rgba(255,255,255,0.45)' }} />Target (dashed)</span>
+          <span className="key"><span className="swatch" style={{ background: C.muscle }} />Muscle</span>
+          <span className="key"><span className="swatch" style={{ background: C.fat }} />Fat</span>
+          <span className="key"><span className="swatch" style={{ background: 'rgba(226,233,245,0.4)' }} />Target (dashed)</span>
         </div>
       </Card>
 

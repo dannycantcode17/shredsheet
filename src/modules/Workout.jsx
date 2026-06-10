@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
-import { PageHead, Card } from '../components/ui.jsx'
+import { PageHead, Card, EmptyState } from '../components/ui.jsx'
 import { epley1RM } from '../lib/engine.js'
 
 const num = (v, d = 0) => { const x = parseFloat(v); return Number.isFinite(x) ? x : d }
@@ -55,10 +55,9 @@ export default function Workout() {
     return (
       <>
         <PageHead title="Workout" sub="Log today's session." />
-        <Card>
-          <span className="muted">Name your training days and add exercises in <b>Gym Plan</b> first — then come back here to log sets.</span>
-          <div style={{ marginTop: 14 }}><button className="btn primary" onClick={() => setView('plan')}>Open Gym Plan →</button></div>
-        </Card>
+        <EmptyState icon="calendar" title="No plan yet"
+          sub="Name your training days and add exercises in Gym Plan first — then come back here to log sets."
+          action="Open Gym Plan →" onAction={() => setView('plan')} />
       </>
     )
   }
@@ -115,7 +114,10 @@ export default function Workout() {
             </div>
           ))}
         </Card>
-      )) : <Card><span className="faint">No sets yet — add your first above.</span></Card>}
+      )) : (
+        <EmptyState icon="dumbbell" title="No sets yet"
+          sub="Pick an exercise above and add your first set — it lands here as you go." />
+      )}
 
       <Card className="wk-cardio">
         <label className="dl-field"><span className="dl-k">Cardio today (min)</span>

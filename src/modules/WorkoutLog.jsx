@@ -13,7 +13,7 @@ export default function WorkoutLog() {
   const del = (i) => setWorkoutLog(log.filter((_, j) => j !== i))
   return (
     <>
-      <PageHead eyebrow="Log · 4" title="Workout Log" sub="One row per set. The detail powers volume, calorie burn, muscle and strength tracking." />
+      <PageHead eyebrow="Log" title="Workout Log" sub="One row per set. The detail powers volume, calorie burn, muscle and strength tracking." />
       <Card>
         <div style={{ overflowX: 'auto' }}>
           <table className="tbl">

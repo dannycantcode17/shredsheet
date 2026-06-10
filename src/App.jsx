@@ -11,21 +11,21 @@ import Settings from './modules/Settings.jsx'
 import Configurator from './modules/Configurator.jsx'
 import { Icon } from './components/icons.jsx'
 
-// Desktop sidebar grouping
+// Desktop sidebar grouping — line icons, not numbers, so the nav reads at a glance
 const NAV = [
   { group: 'Insights', items: [
-    { key: 'data', ix: '5', label: 'Data' },
-    { key: 'coach', ix: '6', label: 'AI Coach' },
+    { key: 'data', ix: 'activity', label: 'Data' },
+    { key: 'coach', ix: 'chat', label: 'AI Coach' },
   ]},
   { group: 'Setup', items: [
-    { key: 'inputs', ix: '1', label: 'Inputs' },
-    { key: 'plan', ix: '2', label: 'Gym Plan' },
-    { key: 'configure', ix: '↻', label: 'Reconfigure' },
+    { key: 'inputs', ix: 'sliders', label: 'Inputs' },
+    { key: 'plan', ix: 'calendar', label: 'Gym Plan' },
+    { key: 'configure', ix: 'refresh', label: 'Reconfigure' },
   ]},
   { group: 'Log', items: [
-    { key: 'food', ix: '3', label: 'Food' },
-    { key: 'daily', ix: '4', label: 'Daily Log' },
-    { key: 'gym', ix: '5', label: 'Workout' },
+    { key: 'food', ix: 'flame', label: 'Food' },
+    { key: 'daily', ix: 'clipboard', label: 'Daily Log' },
+    { key: 'gym', ix: 'dumbbell', label: 'Workout' },
   ]},
 ]
 
@@ -85,26 +85,29 @@ export default function App() {
               <div className="nav-group-label">{g.group}</div>
               {g.items.map(it => (
                 <button key={it.key} className={`nav-item ${v === it.key ? 'active' : ''}`} onClick={() => setView(it.key)}>
-                  <span className="ix">{it.ix}</span>{it.label}
+                  <span className="ix"><Icon name={it.ix} /></span>{it.label}
                 </button>
               ))}
             </div>
           ))}
           <div className="nav-group-label">System</div>
           <button className={`nav-item ${v === 'settings' ? 'active' : ''}`} onClick={() => setView('settings')}>
-            <span className="ix">⚙</span>Settings
+            <span className="ix"><Icon name="settings" /></span>Settings
           </button>
         </aside>
         <main className="main">
-          {v === 'inputs' && <Inputs />}
-          {v === 'plan' && <GymPlan />}
-          {v === 'daily' && <DailyLog />}
-          {v === 'food' && <FoodLog />}
-          {v === 'data' && <DataDash />}
-          {v === 'gym' && <Workout />}
-          {v === 'coach' && <AICoach />}
-          {v === 'settings' && <Settings />}
-          {v === 'more' && <MoreMenu setView={setView} />}
+          {/* keyed wrapper re-triggers the ease-in on every view change */}
+          <div className="view" key={v}>
+            {v === 'inputs' && <Inputs />}
+            {v === 'plan' && <GymPlan />}
+            {v === 'daily' && <DailyLog />}
+            {v === 'food' && <FoodLog />}
+            {v === 'data' && <DataDash />}
+            {v === 'gym' && <Workout />}
+            {v === 'coach' && <AICoach />}
+            {v === 'settings' && <Settings />}
+            {v === 'more' && <MoreMenu setView={setView} />}
+          </div>
         </main>
       </div>
       <nav className="tabbar" role="tablist" aria-label="Primary">

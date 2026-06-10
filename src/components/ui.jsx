@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Icon } from './icons.jsx'
 
 export const Eyebrow = ({ children }) => <div className="eyebrow">{children}</div>
 export const Card = ({ children, className = '', ...rest }) => <div className={`card ${className}`} {...rest}>{children}</div>
@@ -41,6 +42,39 @@ export const fmt = (x, dp = 1, signed = false) => {
   const v = Number(x).toFixed(dp)
   return signed && x >= 0 ? `+${v}` : v
 }
+
+// Designed empty state: icon badge + headline + sub + optional CTA.
+export const EmptyState = ({ icon = 'sparkles', title, sub, action, onAction, card = true }) => {
+  const body = (
+    <div className="empty">
+      <span className="e-ico"><Icon name={icon} /></span>
+      <h3 className="e-title">{title}</h3>
+      {sub && <p className="e-sub">{sub}</p>}
+      {action && <button className="btn primary" onClick={onAction}>{action}</button>}
+    </div>
+  )
+  return card ? <Card>{body}</Card> : body
+}
+
+// Progress meter toward a daily target. Pure presentation — value/target
+// arrive precomputed; no engine maths here.
+export const Meter = ({ label, value, target, unit = '', tone, overTone = 'over' }) => {
+  const pct = target > 0 ? Math.min(100, (value / target) * 100) : 0
+  const over = target > 0 && value > target
+  return (
+    <div className="meter">
+      <div className="meter-head">
+        <span className="m-label">{label}</span>
+        <span className="m-val"><b>{Math.round(value)}</b> / {Math.round(target)}{unit}</span>
+      </div>
+      <div className="meter-track">
+        <div className={`meter-fill ${over ? overTone : ''} ${tone || ''}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  )
+}
+
+export const Spinner = () => <span className="spin" aria-hidden="true" />
 
 export const StatBox = ({ label, value, tone, rows = [], info }) => {
   const [open, setOpen] = useState(false)
