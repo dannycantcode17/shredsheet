@@ -2,7 +2,7 @@
 // 1) Prefer the serverless proxy /api/coach (key stays server-side on Cloudflare Pages).
 // 2) Fallback: user-supplied key from Settings, called direct from the browser
 //    (fine for a personal single-user tool; see CHANGES_FROM_EXCEL.md / deploy notes).
-export async function askCoach({ messages, context, apiKey, model = 'claude-3-5-sonnet-20241022' }) {
+export async function askCoach({ messages, context, apiKey, model = 'claude-sonnet-4-6' }) {
   // try serverless proxy first
   try {
     const res = await fetch('/api/coach', {
@@ -31,4 +31,19 @@ export async function askCoach({ messages, context, apiKey, model = 'claude-3-5-
   if (!res.ok) { const t = await res.text(); throw new Error(`AI error ${res.status}: ${t.slice(0, 200)}`) }
   const d = await res.json()
   return d.content?.map(c => c.text).join('') || '(no response)'
+}
+
+// Rough meal -> calories + protein estimate. No food database — this leans
+// entirely on the model, so treat it as a ballpark, not a measurement.
+// Returns { calories, protein } (integers, either may be null if not parsed).
+export async function estimateMeal({ description, apiKey, model }) {
+  const context =
+    'You are a nutrition estimator inside a fitness tracker. The user describes a meal in plain text. ' +
+    'Reply with ONLY two whole numbers separated by a comma and nothing else: total calories (kcal), then ' +
+    'total protein (grams). Example: 640,38. No words, no units, no thousands separators. If portion sizes ' +
+    'are vague, assume a typical adult portion.'
+  const text = await askCoach({ messages: [{ role: 'user', content: String(description || '') }], context, apiKey, model })
+  const nums = (String(text).match(/\d{1,5}/g) || []).map(n => parseInt(n, 10))
+  if (!nums.length) return { calories: null, protein: null }
+  return { calories: nums[0] ?? null, protein: nums[1] ?? null }
 }

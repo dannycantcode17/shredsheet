@@ -17,7 +17,13 @@ const seed = () => ({
 
 export function StoreProvider({ children }) {
   const [state, setState] = useState(() => ({ ...seed(), ...(loadState() || {}) }))
-  const [view, setView] = useState('dashboard')
+  // First run lands on Inputs; anyone with existing data (or who finished
+  // onboarding) opens straight on the dashboard.
+  const [view, setView] = useState(() => {
+    const s = loadState()
+    const seen = s && (s.onboarded || Object.keys(s.dailyLog || {}).length > 0 || (s.workoutLog || []).length > 0)
+    return seen ? 'dashboard' : 'inputs'
+  })
 
   useEffect(() => { saveState(state) }, [state])
 
