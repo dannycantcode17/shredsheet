@@ -76,6 +76,48 @@ export const Meter = ({ label, value, target, unit = '', tone, overTone = 'over'
 
 export const Spinner = () => <span className="spin" aria-hidden="true" />
 
+// SVG progress ring — the Today screen's calorie hero. Pure presentation.
+export const Ring = ({ value, max, size = 176, stroke = 13, over = false, children }) => {
+  const r = (size - stroke) / 2
+  const c = 2 * Math.PI * r
+  const pct = max > 0 ? Math.min(1, Math.max(0, value / max)) : 0
+  return (
+    <div className="ring" style={{ width: size, height: size }}>
+      <svg width={size} height={size} aria-hidden="true">
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(148,168,205,0.13)" strokeWidth={stroke} />
+        <circle
+          className={`ring-fill ${over ? 'over' : ''}`}
+          cx={size / 2} cy={size / 2} r={r} fill="none"
+          strokeWidth={stroke} strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={c * (1 - pct)}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </svg>
+      <div className="ring-center">{children}</div>
+    </div>
+  )
+}
+
+// Thumb-sized numeric stepper: −/+ buttons around a typeable field.
+// Replaces bare spreadsheet-style number cells everywhere a phone thumb works.
+export const Stepper = ({ label, value, onChange, step = 1, min = 0, placeholder = '' }) => {
+  const bump = (d) => {
+    const base = parseFloat(value)
+    const next = Math.max(min, Math.round(((Number.isFinite(base) ? base : 0) + d) * 100) / 100)
+    onChange(String(next))
+  }
+  return (
+    <div className="stepper">
+      {label && <span className="st-label">{label}</span>}
+      <div className="st-row">
+        <button type="button" className="st-btn" aria-label={`Decrease ${label || 'value'}`} onClick={() => bump(-step)}>−</button>
+        <input type="number" inputMode="decimal" placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} />
+        <button type="button" className="st-btn" aria-label={`Increase ${label || 'value'}`} onClick={() => bump(step)}>+</button>
+      </div>
+    </div>
+  )
+}
+
 export const StatBox = ({ label, value, tone, rows = [], info }) => {
   const [open, setOpen] = useState(false)
   return (

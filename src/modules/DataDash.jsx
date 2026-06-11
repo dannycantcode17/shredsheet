@@ -1,41 +1,33 @@
 import React, { useState } from 'react'
-import { Icon } from '../components/icons.jsx'
 import BodycompDash from './BodycompDash.jsx'
 import CaloriesDash from './CaloriesDash.jsx'
 import GymDash from './GymDash.jsx'
-import Targets from './Targets.jsx'
 
-// The Data tab — consolidates the trend dashboards + Targets behind a pop-up
-// view-picker, so phones get one tab instead of four.
+// ============================================================
+// PROGRESS — the insights hub.
+// IA decision: the old pop-up view picker hid what's available;
+// an iOS-style segmented control shows all three lenses at once
+// (Body / Nutrition / Strength) and swaps with one tap. Targets
+// stopped being a separate screen — plan numbers now live as
+// context rows inside the KPIs they explain.
+// ============================================================
 const VIEWS = [
   ['body', 'Body', BodycompDash],
-  ['calories', 'Calories', CaloriesDash],
-  ['gym', 'Gym', GymDash],
-  ['targets', 'Targets', Targets],
+  ['nutrition', 'Nutrition', CaloriesDash],
+  ['strength', 'Strength', GymDash],
 ]
 
 export default function DataDash() {
   const [sel, setSel] = useState('body')
-  const [open, setOpen] = useState(false)
-  const current = VIEWS.find(v => v[0] === sel) || VIEWS[0]
-  const View = current[2]
+  const View = (VIEWS.find(v => v[0] === sel) || VIEWS[0])[2]
   return (
     <>
-      <div className="eyebrow">Data</div>
-      <div className="data-head">
-        <button className="data-picker" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(o => !o)}>
-          {current[1]}<span className="data-chev"><Icon name="chevron" /></span>
-        </button>
-        {open && (
-          <>
-            <div className="data-scrim" onClick={() => setOpen(false)} />
-            <div className="data-menu" role="menu">
-              {VIEWS.map(([k, label]) => (
-                <button key={k} role="menuitem" className={`data-mi ${k === sel ? 'active' : ''}`} onClick={() => { setSel(k); setOpen(false) }}>{label}</button>
-              ))}
-            </div>
-          </>
-        )}
+      <div className="eyebrow">Insights</div>
+      <h1 className="page" style={{ marginBottom: 18 }}>Progress</h1>
+      <div className="segmented" role="tablist" aria-label="Progress views">
+        {VIEWS.map(([k, label]) => (
+          <button key={k} className={sel === k ? 'active' : ''} aria-current={sel === k ? 'page' : undefined} onClick={() => setSel(k)}>{label}</button>
+        ))}
       </div>
       <View embedded />
     </>

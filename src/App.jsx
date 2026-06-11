@@ -1,5 +1,6 @@
 import React from 'react'
 import { useStore } from './state/store.jsx'
+import Today from './modules/Today.jsx'
 import Inputs from './modules/Inputs.jsx'
 import GymPlan from './modules/GymPlan.jsx'
 import DailyLog from './modules/DailyLog.jsx'
@@ -11,38 +12,50 @@ import Settings from './modules/Settings.jsx'
 import Configurator from './modules/Configurator.jsx'
 import { Icon } from './components/icons.jsx'
 
-// Desktop sidebar grouping — line icons, not numbers, so the nav reads at a glance
+// ============================================================
+// INFORMATION ARCHITECTURE
+// The user journey is built around the daily loop:
+//   TODAY (home) → what can I eat, what's due, am I on track
+//   TRAIN        → log the session, driven by the plan
+//   FOOD         → log meals (the FAB — the most frequent action)
+//   PROGRESS     → the three lenses: body / nutrition / strength
+// Setup (Plan, Inputs) and system screens sit behind the
+// sidebar groups on desktop and "More" on the phone.
+// ============================================================
+
 const NAV = [
+  { group: 'Daily', items: [
+    { key: 'today', ix: 'home', label: 'Today' },
+    { key: 'food', ix: 'flame', label: 'Food' },
+    { key: 'gym', ix: 'dumbbell', label: 'Train' },
+  ]},
   { group: 'Insights', items: [
-    { key: 'data', ix: 'activity', label: 'Data' },
+    { key: 'data', ix: 'trend', label: 'Progress' },
     { key: 'coach', ix: 'chat', label: 'AI Coach' },
   ]},
   { group: 'Setup', items: [
+    { key: 'plan', ix: 'calendar', label: 'Plan' },
     { key: 'inputs', ix: 'sliders', label: 'Inputs' },
-    { key: 'plan', ix: 'calendar', label: 'Gym Plan' },
+    { key: 'daily', ix: 'book', label: 'Journal' },
     { key: 'configure', ix: 'refresh', label: 'Reconfigure' },
-  ]},
-  { group: 'Log', items: [
-    { key: 'food', ix: 'flame', label: 'Food' },
-    { key: 'daily', ix: 'clipboard', label: 'Daily Log' },
-    { key: 'gym', ix: 'dumbbell', label: 'Workout' },
   ]},
 ]
 
-// Mobile bottom tab bar — five slots; Log (the daily habit) sits prominent in
-// the centre, everything else lives behind "More".
+// Mobile bottom tab bar — Today first; the FAB is food logging,
+// the single most frequent daily action.
 const TABS = [
-  { key: 'data', label: 'Data', icon: 'activity' },
-  { key: 'food', label: 'Food', icon: 'flame' },
-  { key: 'daily', label: 'Log', icon: 'plus', emphasis: true },
-  { key: 'gym', label: 'Gym', icon: 'dumbbell' },
+  { key: 'today', label: 'Today', icon: 'home' },
+  { key: 'gym', label: 'Train', icon: 'dumbbell' },
+  { key: 'food', label: 'Log', icon: 'plus', emphasis: true },
+  { key: 'data', label: 'Progress', icon: 'trend' },
   { key: 'more', label: 'More', icon: 'more' },
 ]
 const MORE = [
   { key: 'coach', label: 'AI Coach', icon: 'chat', sub: 'Your live coach reads every number' },
-  { key: 'configure', label: 'Reconfigure', icon: 'clipboard', sub: 'Rebuild your setup from scratch' },
+  { key: 'plan', label: 'Plan', icon: 'calendar', sub: 'Your split, exercises & strength targets' },
+  { key: 'daily', label: 'Journal', icon: 'book', sub: 'The full day-by-day record' },
   { key: 'inputs', label: 'Inputs', icon: 'sliders', sub: 'Who you are & what you’re chasing' },
-  { key: 'plan', label: 'Gym Plan', icon: 'calendar', sub: 'Your training split & strength targets' },
+  { key: 'configure', label: 'Reconfigure', icon: 'refresh', sub: 'Rebuild your setup from scratch' },
   { key: 'settings', label: 'Settings', icon: 'settings', sub: 'AI key, backup & reset' },
 ]
 const MORE_KEYS = MORE.map(m => m.key)
@@ -69,7 +82,7 @@ function MoreMenu({ setView }) {
 
 export default function App() {
   const { state, view, setView } = useStore()
-  const v = view === 'dashboard' ? 'data' : view
+  const v = view === 'dashboard' ? 'today' : view
   // First run (no data yet) opens the configurator; "Reconfigure" re-enters it.
   const seen = state.onboarded || Object.keys(state.dailyLog || {}).length > 0 || (state.workoutLog || []).length > 0
   if (!seen || v === 'configure') return <div className="app-root"><Configurator /></div>
@@ -98,6 +111,7 @@ export default function App() {
         <main className="main">
           {/* keyed wrapper re-triggers the ease-in on every view change */}
           <div className="view" key={v}>
+            {v === 'today' && <Today />}
             {v === 'inputs' && <Inputs />}
             {v === 'plan' && <GymPlan />}
             {v === 'daily' && <DailyLog />}

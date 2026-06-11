@@ -82,6 +82,20 @@ const PATHS = {
       <polyline points="17 6 23 6 23 12" />
     </>
   ),
+  home: (
+    <>
+      <path d="M3 9.5L12 3l9 6.5V20a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 20z" />
+      <polyline points="9 21.5 9 13.5 15 13.5 15 21.5" />
+    </>
+  ),
+  check: <polyline points="20 6 9 17 4 12" />,
+  minus: <line x1="5" y1="12" x2="19" y2="12" />,
+  book: (
+    <>
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </>
+  ),
 }
 
 export function Icon({ name, ...rest }) {
