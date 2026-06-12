@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
-import { PageHead, Card, StatBox, EmptyState, fmt } from '../components/ui.jsx'
+import { PageHead, Card, StatBox, EmptyState, ChartTabs, fmt } from '../components/ui.jsx'
 import { epley1RM } from '../lib/engine.js'
 import { ResponsiveContainer, LineChart, Line, ComposedChart, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts'
 import { axisProps, gridProps, tooltipProps, ChartDefs, C } from '../components/chart.jsx'
@@ -58,6 +58,8 @@ export default function GymDash({ embedded }) {
   })()
 
   const liftBars = key6.map(e => ({ name: e.name.length > 14 ? e.name.slice(0, 13) + '…' : e.name, First: e.first, Best: e.max, Target: e.target || 0 }))
+  const [chart, setChart] = useState('prog')
+  const chartTabs = [['prog', 'Lift progression'], ...(liftBars.length ? [['target', 'Vs target']] : []), ['load', 'Weekly load']]
 
   if (noLifts) {
     return (
@@ -80,8 +82,9 @@ export default function GymDash({ embedded }) {
         <StatBox label="Avg strength gain" value={`${fmt(strength.avgPctGain * 100, 0, true)}%`} tone={strength.avgPctGain >= 0 ? 'pos' : 'neg'} rows={[{ k: 'Lifts tracked', v: `${strength.exercises.length}` }, { k: 'Targets hit', v: `${key6.filter(e => e.hitTarget).length}/${key6.length}` }]} />
       </div>
 
-      <h2 className="section">Lift progression</h2>
-      <Card>
+      <ChartTabs tabs={chartTabs} value={chart} onChange={setChart} />
+
+      {chart === 'prog' && <Card>
         <div className="lift-chips">
           {(key6.length ? key6.map(e => e.name) : liftNames.slice(0, 6)).map(nme => (
             <button key={nme} className={`chip ${activeLift === nme ? 'on' : ''}`} onClick={() => setSelLift(nme)}>{nme}</button>
@@ -99,12 +102,11 @@ export default function GymDash({ embedded }) {
           <StatBox label="Heaviest set" value={`${liftDetail.heaviest || '–'}kg`} />
           <StatBox label="Target 1RM" value={liftDetail.ex?.target ? `${liftDetail.ex.target}kg` : '–'} rows={liftDetail.ex?.target ? [{ k: liftDetail.ex.hitTarget ? 'Hit ✓' : 'Not yet', v: '' }] : []} />
         </div>
-      </Card>
+      </Card>}
 
-      {liftBars.length > 0 && (
-        <>
-          <h2 className="section">Key lifts vs target</h2>
+      {chart === 'target' && liftBars.length > 0 && (
           <Card>
+            <div className="chart-title">Key lifts vs target · <b>est. 1RM</b></div>
             <div className="chart-wrap"><ResponsiveContainer>
               <BarChart data={liftBars} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
                 <ChartDefs />
@@ -115,11 +117,9 @@ export default function GymDash({ embedded }) {
               </BarChart>
             </ResponsiveContainer></div>
           </Card>
-        </>
       )}
 
-      <h2 className="section">Weekly load</h2>
-      <Card>
+      {chart === 'load' && <Card>
         <div className="chart-title">Tonnage (bars) and hard sets (line) · <b>per week</b></div>
         <div className="chart-wrap"><ResponsiveContainer>
           <ComposedChart data={weekData} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
@@ -137,7 +137,7 @@ export default function GymDash({ embedded }) {
           <span className="key"><span className="swatch" style={{ background: C.fat }} />Tonnage (kg)</span>
           <span className="key"><span className="swatch" style={{ background: C.muscle }} />Sets · dashed = planned {planRes.plannedSets}/wk</span>
         </div>
-      </Card>
+      </Card>}
     </>
   )
 }

@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
-import { PageHead, Card, StatBox, EmptyState, fmt } from '../components/ui.jsx'
+import { PageHead, Card, StatBox, EmptyState, ChartTabs, fmt } from '../components/ui.jsx'
 import { cleanliness } from '../lib/engine.js'
 import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts'
 import { axisProps, gridProps, tooltipProps, ChartDefs, C } from '../components/chart.jsx'
@@ -23,6 +23,7 @@ export default function BodycompDash({ embedded }) {
   }))
   const actualClean = cleanliness(daily.cumWeight, daily.cumFat, daily.cumMuscle)
   const noData = lastLogged === 0
+  const [chart, setChart] = useState('curve')
 
   // scale-weight trend: logged weigh-ins vs the straight line to goal
   const startW = parseFloat(state.inputs.startWeightKg) || 0
@@ -43,15 +44,15 @@ export default function BodycompDash({ embedded }) {
         <StatBox label="Shred efficiency" value={`${Math.round(actualClean * 100)}%`} tone={actualClean >= 0.5 ? 'pos' : 'neg'} rows={[{ k: 'Plan', v: `${Math.round(planRes.cleanliness * 100)}%` }]} info="How clean your change is — the share that's the good kind (muscle up, fat down). 50%+ is solid." />
       </div>
 
-      <h2 className="section">The Shred Curve</h2>
       {noData && (
-        <div style={{ marginBottom: 14 }}>
+        <div style={{ margin: '22px 0 0' }}>
           <EmptyState icon="trend" title="Your curves start here"
             sub="Log a few days of weight and calories and your actual fat & muscle lines draw themselves over the targets."
             action="Open Today" onAction={() => setView('today')} />
         </div>
       )}
-      <Card>
+      <ChartTabs tabs={[['curve', 'The Shred Curve'], ['weight', 'Scale weight']]} value={chart} onChange={setChart} />
+      {chart === 'curve' && <Card>
         <div className="chart-title">Muscle up, fat down · <b>cumulative kg</b></div>
         <div className="chart-wrap"><ResponsiveContainer>
           {/* actuals get a soft gradient fill so they read as "real" against the dashed plan */}
@@ -71,10 +72,9 @@ export default function BodycompDash({ embedded }) {
           <span className="key"><span className="swatch" style={{ background: C.fat }} />Fat</span>
           <span className="key"><span className="swatch" style={{ background: 'rgba(226,233,245,0.4)' }} />Plan (dashed)</span>
         </div>
-      </Card>
+      </Card>}
 
-      <h2 className="section">Scale weight</h2>
-      <Card>
+      {chart === 'weight' && <Card>
         <div className="chart-title">Weigh-ins vs the line to goal · <b>{weighIns} logged</b></div>
         <div className="chart-wrap"><ResponsiveContainer>
           <ComposedChart data={weightData} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
@@ -85,7 +85,7 @@ export default function BodycompDash({ embedded }) {
           </ComposedChart>
         </ResponsiveContainer></div>
         {!weighIns && <div className="legend"><span className="faint">Weigh in on the Today screen and your trend appears against the plan line.</span></div>}
-      </Card>
+      </Card>}
     </>
   )
 }

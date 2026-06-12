@@ -76,6 +76,16 @@ export const Meter = ({ label, value, target, unit = '', tone, overTone = 'over'
 
 export const Spinner = () => <span className="spin" aria-hidden="true" />
 
+// Chart selector — on a phone you look at one chart at a time, so
+// every Progress lens shows exactly one chart, picked here.
+export const ChartTabs = ({ tabs, value, onChange }) => (
+  <div className="chart-tabs" role="tablist" aria-label="Chart">
+    {tabs.map(([k, label]) => (
+      <button key={k} role="tab" aria-selected={value === k} className={`chip ${value === k ? 'on' : ''}`} onClick={() => onChange(k)}>{label}</button>
+    ))}
+  </div>
+)
+
 // SVG progress ring — the Today screen's calorie hero. Pure presentation.
 export const Ring = ({ value, max, size = 176, stroke = 13, over = false, children }) => {
   const r = (size - stroke) / 2

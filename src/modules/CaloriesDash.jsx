@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
-import { PageHead, Card, StatBox, EmptyState, fmt } from '../components/ui.jsx'
+import { PageHead, Card, StatBox, EmptyState, ChartTabs, fmt } from '../components/ui.jsx'
 import { ResponsiveContainer, ComposedChart, BarChart, Bar, Cell, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from 'recharts'
 import { axisProps, gridProps, tooltipProps, ChartDefs, C } from '../components/chart.jsx'
 
@@ -27,6 +27,7 @@ export default function CaloriesDash({ embedded }) {
   const goodDay = (b) => (wantSurplus ? b >= 0 : b <= 0)
   const proteinTarget = Math.round(planRes.proteinTarget)
   const hitProteinDays = calData.filter(d => d.Protein >= proteinTarget).length
+  const [chart, setChart] = useState('inout')
 
   return (
     <>
@@ -45,8 +46,10 @@ export default function CaloriesDash({ embedded }) {
         <StatBox label="Protein target hit" value={calData.length ? `${hitProteinDays}/${calData.length}` : '–'} tone={calData.length && hitProteinDays / calData.length >= 0.7 ? 'pos' : undefined} rows={[{ k: 'Target', v: `${proteinTarget} g/day` }, { k: 'Avg', v: `${Math.round(daily.whole.avgProtein) || '–'} g` }]} />
       </div>
 
-      <h2 className="section">Calories in vs out</h2>
-      <Card>
+      <ChartTabs tabs={[['inout', 'In vs out'], ['balance', 'Daily balance'], ['protein', 'Protein']]} value={chart} onChange={setChart} />
+
+      {chart === 'inout' && <Card>
+        <div className="chart-title">Calories in vs out · <b>per day</b></div>
         <div className="chart-wrap"><ResponsiveContainer>
           <ComposedChart data={calData} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
             <ChartDefs />
@@ -59,10 +62,9 @@ export default function CaloriesDash({ embedded }) {
           <span className="key"><span className="swatch" style={{ background: C.pink }} />TDEE (out)</span>
           <span className="key"><span className="swatch" style={{ background: C.fat }} />Consumed (in)</span>
         </div>
-      </Card>
+      </Card>}
 
-      <h2 className="section">Daily balance</h2>
-      <Card>
+      {chart === 'balance' && <Card>
         <div className="chart-title">Deficit / surplus per day · <b>dashed line = your daily target</b></div>
         <div className="chart-wrap"><ResponsiveContainer>
           <BarChart data={calData} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
@@ -78,10 +80,9 @@ export default function CaloriesDash({ embedded }) {
           <span className="key"><span className="swatch" style={{ background: C.accent }} />Toward goal</span>
           <span className="key"><span className="swatch" style={{ background: C.warn }} />Off plan</span>
         </div>
-      </Card>
+      </Card>}
 
-      <h2 className="section">Protein</h2>
-      <Card>
+      {chart === 'protein' && <Card>
         <div className="chart-title">Grams per day · <b>target {proteinTarget}g</b></div>
         <div className="chart-wrap"><ResponsiveContainer>
           <BarChart data={calData} margin={{ top: 16, right: 12, left: -8, bottom: 0 }}>
@@ -93,7 +94,7 @@ export default function CaloriesDash({ embedded }) {
             </Bar>
           </BarChart>
         </ResponsiveContainer></div>
-      </Card>
+      </Card>}
     </>
   )
 }

@@ -1309,3 +1309,58 @@ a { color: var(--accent); }
 }
 .plan-add-day:hover { border-color: var(--accent); color: var(--accent-hi); background: rgba(45, 227, 196, 0.05); }
 .plan-add-day:active { transform: scale(0.99); }
+
+/* ============================================================
+   WHEEL PICKER — snap-scroll number selection (configurator)
+   ============================================================ */
+.wheel { position: relative; flex: 1; min-width: 0; }
+.wheel-win {
+  position: absolute; left: 50%; top: 2px; bottom: 22px; width: 66px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(45, 227, 196, 0.45); border-radius: 16px;
+  background: var(--accent-dim);
+  box-shadow: 0 0 18px -8px var(--accent-glow);
+  pointer-events: none;
+}
+.wheel-strip {
+  display: flex; align-items: center;
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px calc(50% - 28px);
+  scrollbar-width: none;
+  mask-image: linear-gradient(90deg, transparent, black 16%, black 84%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 16%, black 84%, transparent);
+}
+.wheel-strip::-webkit-scrollbar { display: none; }
+.wheel-strip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 12px; }
+.wheel-cell {
+  flex: 0 0 56px; width: 56px;
+  scroll-snap-align: center;
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-faint);
+  font-family: var(--font-display); font-size: 17px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 16px 0;
+  transition: color 180ms var(--ease), transform 180ms var(--ease), opacity 180ms var(--ease);
+  opacity: 0.55;
+  -webkit-tap-highlight-color: transparent;
+}
+.wheel-cell.on { color: var(--ink); transform: scale(1.45); opacity: 1; }
+.wheel-unit {
+  text-align: center; margin-top: 2px;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  font-weight: 700; color: var(--ink-faint);
+}
+
+/* ============================================================
+   CHART TABS — one chart on screen at a time
+   ============================================================ */
+.chart-tabs {
+  display: flex; gap: 8px;
+  overflow-x: auto; scrollbar-width: none;
+  margin: 24px 0 14px;
+  padding-bottom: 2px;
+}
+.chart-tabs::-webkit-scrollbar { display: none; }
+.chart-tabs .chip { flex: 0 0 auto; }
