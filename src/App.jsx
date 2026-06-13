@@ -91,7 +91,21 @@ export default function App() {
     <div className="app-root">
       <div className="shell">
         <aside className="sidebar">
-          <div className="brand">THE SHRED<span className="dot">·</span>SHEET</div>
+          <div className="brand">
+            <svg className="brand-mark" viewBox="0 0 58 70" fill="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="slashGrad" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#0A5249"/>
+                  <stop offset="55%" stopColor="#12A08D"/>
+                  <stop offset="100%" stopColor="#2DE3C4"/>
+                </linearGradient>
+              </defs>
+              <polygon points="0,66 10,66 26,4 16,4" fill="url(#slashGrad)" opacity="0.78"/>
+              <polygon points="14,66 24,66 40,4 30,4" fill="url(#slashGrad)" opacity="0.9"/>
+              <polygon points="28,66 38,66 54,4 44,4" fill="url(#slashGrad)"/>
+            </svg>
+            shredsheet
+          </div>
           <div className="brand-sub">smarter, not harder</div>
           {NAV.map(g => (
             <div key={g.group}>

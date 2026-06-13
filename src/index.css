@@ -123,13 +123,20 @@ body {
 }
 
 .brand {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 19px;
-  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 9px;
   margin: 0 8px 2px;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 18px;
+  letter-spacing: -0.02em;
 }
-.brand .dot { color: var(--accent); }
+.brand-mark {
+  width: 24px;
+  height: 28px;
+  flex-shrink: 0;
+}
 .brand-sub {
   font-size: 10px;
   letter-spacing: 0.22em;
