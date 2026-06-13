@@ -17,7 +17,7 @@ export default function Inputs() {
   const warnGoal = (cut && i.goalWeightKg > i.startWeightKg) || (!cut && i.goalWeightKg < i.startWeightKg)
   return (
     <>
-      <PageHead eyebrow="Setup · 1" title="Inputs" sub="Tell the Shredsheet who you are and what you're chasing. Everything downstream recalculates live." />
+      <PageHead eyebrow="Setup" title="Inputs" sub="Tell the Shredsheet who you are and what you're chasing. Everything downstream recalculates live." />
 
       <h2 className="section">General</h2>
       <Card>
@@ -58,14 +58,17 @@ export default function Inputs() {
 
       <h2 className="section">Calculated targets</h2>
       <Card>
-        <span className="muted">Your live targets — calories, protein, projected fat &amp; muscle change — now live in the <b>Data</b> tab under <b>Targets</b>.</span>
-        <div style={{ marginTop: 12 }}><button className="btn" onClick={() => setView('data')}>View targets →</button></div>
+        <span className="muted">Your live targets — daily calories &amp; protein are on <b>Today</b>; projected fat &amp; muscle change live in <b>Progress</b>. Everything recalculates the moment you change an input.</span>
+        <div className="btn-row" style={{ marginTop: 12 }}>
+          <button className="btn" onClick={() => setView('today')}>Today →</button>
+          <button className="btn" onClick={() => setView('data')}>Progress →</button>
+        </div>
       </Card>
 
       {!state.onboarded && (
         <div style={{ marginTop: 24 }}>
-          <button className="btn primary" style={{ fontSize: 15, padding: '13px 22px' }} onClick={() => { setOnboarded(true); setView('data') }}>✓ Start tracking →</button>
-          <div className="hint" style={{ marginTop: 8 }}>Next: set up your split in Gym Plan, then log day by day. You can change these inputs any time.</div>
+          <button className="btn primary" style={{ fontSize: 15, padding: '13px 22px' }} onClick={() => { setOnboarded(true); setView('today') }}>✓ Start tracking →</button>
+          <div className="hint" style={{ marginTop: 8 }}>Next: set up your split in Plan, then log day by day. You can change these inputs any time.</div>
         </div>
       )}
     </>

@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext } from 'react'
+import React, { useState, useRef, useMemo, useEffect, createContext, useContext } from 'react'
 import { useStore } from '../state/store.jsx'
 import { INTENSITIES } from '../lib/defaults.js'
 import { GOAL_LABEL, GOAL_SUB } from '../components/ui.jsx'
@@ -29,6 +29,84 @@ function NumField({ k, suffix }) {
       {suffix && <span className="faint" style={{ flex: '0 0 auto', fontSize: 14 }}>{suffix}</span>}
     </div>
   )
+}
+
+// ------------------------------------------------------------
+// Wheel — a horizontal snap-scroll number picker (native-feel
+// alternative to typing on a phone). Tap a number or fling the
+// strip; the centred value is the answer. Controlled component.
+// ------------------------------------------------------------
+const CELL = 56 // px per cell; must match .wheel-cell flex-basis
+function Wheel({ value, onChange, min, max, step = 1, unit }) {
+  const ref = useRef(null)
+  const lastScroll = useRef(0)
+  const raf = useRef(0)
+  const items = useMemo(() => {
+    const out = []
+    for (let v = min; v <= max + 1e-9; v += step) out.push(Math.round(v * 100) / 100)
+    return out
+  }, [min, max, step])
+  const idxOf = (v) => {
+    const x = parseFloat(v)
+    if (!Number.isFinite(x)) return -1
+    return Math.min(items.length - 1, Math.max(0, Math.round((x - min) / step)))
+  }
+  const selIdx = idxOf(value)
+
+  // keep the strip aligned when the value changes from outside
+  // (initial anchor, unit switch) — but never fight a live fling
+  useEffect(() => {
+    const el = ref.current
+    if (!el || selIdx < 0) return
+    if (Date.now() - lastScroll.current < 200) return
+    const target = selIdx * CELL
+    if (Math.abs(el.scrollLeft - target) > 2) el.scrollLeft = target
+  }, [selIdx])
+
+  const onScroll = () => {
+    lastScroll.current = Date.now()
+    cancelAnimationFrame(raf.current)
+    raf.current = requestAnimationFrame(() => {
+      const el = ref.current
+      if (!el) return
+      const i = Math.min(items.length - 1, Math.max(0, Math.round(el.scrollLeft / CELL)))
+      const v = String(items[i])
+      if (v !== String(value ?? '')) onChange(v)
+    })
+  }
+  const go = (i) => ref.current?.scrollTo({ left: Math.min(items.length - 1, Math.max(0, i)) * CELL, behavior: 'smooth' })
+
+  return (
+    <div className="wheel">
+      <div className="wheel-win" aria-hidden="true" />
+      <div
+        className="wheel-strip" ref={ref} onScroll={onScroll}
+        role="slider" tabIndex={0} aria-valuemin={min} aria-valuemax={max}
+        aria-valuenow={Number.isFinite(parseFloat(value)) ? parseFloat(value) : undefined}
+        aria-valuetext={unit ? `${value} ${unit}` : String(value)}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); go((selIdx < 0 ? 0 : selIdx) + 1) }
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); go((selIdx < 0 ? 0 : selIdx) - 1) }
+        }}
+      >
+        {items.map((v, i) => (
+          <button key={v} type="button" tabIndex={-1} className={`wheel-cell ${i === selIdx ? 'on' : ''}`} onClick={() => go(i)}>{v}</button>
+        ))}
+      </div>
+      {unit && <div className="wheel-unit">{unit}</div>}
+    </div>
+  )
+}
+
+// Draft-bound wheel. A scroller always has a value, so a blank
+// draft key is committed to a sensible anchor on mount — the user
+// flicks from there rather than typing from nothing.
+function WheelField({ k, min, max, step = 1, unit, anchor }) {
+  const { draft, update } = useDraft()
+  useEffect(() => {
+    if (draft[k] === '' || draft[k] == null) update({ [k]: String(anchor) })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  return <Wheel value={draft[k]} onChange={(v) => update({ [k]: v })} min={min} max={max} step={step} unit={unit} />
 }
 
 // transparency signpost — what a field actually changes downstream
@@ -91,23 +169,11 @@ function HeightField() {
         <button type="button" className={unit === 'ft' ? 'on' : ''} onClick={() => switchTo('ft')}>ft / in</button>
       </div>
       {unit === 'cm' ? (
-        <div className="cfg-row" style={{ alignItems: 'center' }}>
-          <input className="cfg-input" type="number" inputMode="numeric"
-            value={draft.heightCm ?? ''} onChange={e => update({ heightCm: e.target.value })} />
-          <span className="faint" style={{ flex: '0 0 auto', fontSize: 14 }}>cm</span>
-        </div>
+        <WheelField k="heightCm" min={120} max={220} anchor={175} unit="cm" />
       ) : (
         <div className="cfg-row">
-          <div className="cfg-row" style={{ alignItems: 'center' }}>
-            <input className="cfg-input" type="number" inputMode="numeric" placeholder="5"
-              value={ft} onChange={e => onFt(e.target.value)} />
-            <span className="faint" style={{ flex: '0 0 auto', fontSize: 14 }}>ft</span>
-          </div>
-          <div className="cfg-row" style={{ alignItems: 'center' }}>
-            <input className="cfg-input" type="number" inputMode="numeric" placeholder="10"
-              value={inch} onChange={e => onIn(e.target.value)} />
-            <span className="faint" style={{ flex: '0 0 auto', fontSize: 14 }}>in</span>
-          </div>
+          <Wheel value={ft} onChange={onFt} min={3} max={7} unit="ft" />
+          <Wheel value={inch} onChange={onIn} min={0} max={11} unit="in" />
         </div>
       )}
       <Sign>Part of your BMR calculation.{unit === 'ft' && draft.heightCm ? ` We'll log it as ${draft.heightCm}cm.` : ''}</Sign>
@@ -228,15 +294,33 @@ const EXERCISE_GROUPS = [
   { label: 'Bodyweight', emoji: '🤸', items: ['Pull-up', 'Chin-up', 'Dip', 'Push-up', 'Calf Raise', 'Nordic Curl'] },
 ]
 
+// Which veto groups each equipment pick unlocks. Bodyweight is
+// always shown — it needs no kit. No equipment picked → show all.
+const EQUIP_TO_GROUPS = {
+  'Full gym': ['Barbell', 'Dumbbell', 'Machine & cable', 'Bodyweight'],
+  'Barbell': ['Barbell'],
+  'Dumbbells': ['Dumbbell'],
+  'Machines & cables': ['Machine & cable'],
+  'Bodyweight only': ['Bodyweight'],
+}
+
 // Veto step — tap exercises to EXCLUDE from the generated plan.
+// Only shows exercises for the equipment chosen one step earlier.
 function VetoGrid() {
   const { draft, update } = useDraft()
   const selected = draft.veto || []
   const toggle = (name) => update({ veto: selected.includes(name) ? selected.filter(x => x !== name) : [...selected, name] })
+  const equipment = draft.equipment || []
+  const unlocked = new Set(equipment.flatMap(e => EQUIP_TO_GROUPS[e] || []))
+  unlocked.add('Bodyweight')
+  const groups = equipment.length ? EXERCISE_GROUPS.filter(g => unlocked.has(g.label)) : EXERCISE_GROUPS
   return (
     <>
-      <p className="cfg-lede" style={{ marginBottom: 18 }}>Tap anything you'd rather skip — an old injury, a pet hate, whatever. We'll keep these out of your plan.</p>
-      {EXERCISE_GROUPS.map(g => (
+      <p className="cfg-lede" style={{ marginBottom: 18 }}>
+        Tap anything you'd rather skip — an old injury, a pet hate, whatever. We'll keep these out of your plan.
+        {equipment.length > 0 && <span className="faint"> Showing only the equipment you chose.</span>}
+      </p>
+      {groups.map(g => (
         <div className="cfg-grp" key={g.label}>
           <div className="cfg-grp-label"><span>{g.emoji}</span>{g.label}</div>
           <div className="cfg-grid">
@@ -378,7 +462,7 @@ export default function Configurator() {
       render: () => (
         <>
           <h1 className="cfg-q">How old are you?</h1>
-          <NumField k="age" suffix="years" />
+          <WheelField k="age" min={14} max={90} anchor={25} unit="years" />
           <Sign>Feeds your metabolism (BMR) — the calories you'd burn doing nothing.</Sign>
         </>
       ),
@@ -399,7 +483,7 @@ export default function Configurator() {
       render: () => (
         <>
           <h1 className="cfg-q">What do you weigh right now?</h1>
-          <NumField k="startWeightKg" suffix="kg" />
+          <WheelField k="startWeightKg" min={35} max={180} step={0.5} anchor={80} unit="kg" />
           <Sign>The anchor for your calorie target and daily protein goal.</Sign>
         </>
       ),
@@ -446,9 +530,9 @@ export default function Configurator() {
       eyebrow: 'Training',
       render: () => (
         <>
-          <h1 className="cfg-q">What kit do you have?</h1>
+          <h1 className="cfg-q">What equipment do you want to use?</h1>
           <MultiChips k="equipment" options={EQUIPMENT_CHOICES} columns={2} />
-          <Sign>Your plan will only use exercises you can actually do. Pick all that apply.</Sign>
+          <Sign>Not what your gym owns — what you actually want in your plan. Dumbbells, barbells, machines, bodyweight… pick all that apply, and your plan sticks to it.</Sign>
         </>
       ),
     },

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useStore } from '../state/store.jsx'
-import { PageHead, Card, Pill } from '../components/ui.jsx'
+import { PageHead, Card, Pill, Meter, Spinner, EmptyState } from '../components/ui.jsx'
 import { estimateMeal } from '../lib/ai.js'
 
 const todayDayNum = (startDate) => Math.floor((Date.parse(new Date().toISOString().slice(0, 10)) - Date.parse(startDate)) / 86400000) + 1
@@ -68,9 +68,10 @@ export default function FoodLog() {
           <button className="fd-arrow" onClick={() => setViewDay(v => Math.min(days, v + 1))} disabled={d >= days} aria-label="Next day">›</button>
         </div>
         <div className="divider" />
+        {/* live meters: presentation only — totals vs the engine's targets */}
         <div className="fd-totals">
-          <div><div className="fd-big">{totalC}</div><div className="faint">/ {Math.round(planRes.calorieTarget)} kcal</div></div>
-          <div><div className="fd-big">{totalP}g</div><div className="faint">/ {Math.round(planRes.proteinTarget)}g protein</div></div>
+          <Meter label="Calories" value={totalC} target={planRes.calorieTarget} unit=" kcal" />
+          <Meter label="Protein" value={totalP} target={planRes.proteinTarget} unit="g" tone="blue" overTone="" />
         </div>
       </Card>
 
@@ -78,7 +79,7 @@ export default function FoodLog() {
         <div className="eyebrow" style={{ marginBottom: 10 }}>Add a meal</div>
         <textarea rows={2} placeholder="e.g. chicken burrito bowl with rice, beans, guac" value={desc} onChange={e => setDesc(e.target.value)} />
         <div className="btn-row" style={{ marginTop: 12 }}>
-          <button className="btn" onClick={estimate} disabled={busy || !desc.trim()}>{busy ? 'Estimating…' : '✨ Estimate with coach'}</button>
+          <button className="btn" onClick={estimate} disabled={busy || !desc.trim()}>{busy ? <><Spinner /> Estimating…</> : '✨ Estimate with coach'}</button>
         </div>
         {err && <div style={{ marginTop: 12 }}><Pill tone="bad">{err}</Pill></div>}
         <div className="fd-entry">
@@ -93,7 +94,10 @@ export default function FoodLog() {
 
       <Card>
         <div className="eyebrow">{label}'s meals</div>
-        {!meals.length && <p className="faint" style={{ marginTop: 12, marginBottom: 0 }}>No meals logged for this day yet.</p>}
+        {!meals.length && (
+          <EmptyState card={false} icon="flame" title="Nothing logged yet"
+            sub="Describe what you ate above — the coach estimates the numbers, you adjust, done." />
+        )}
         {meals.map((m, i) => (
           <div className="fd-meal" key={i}>
             <div style={{ minWidth: 0 }}>

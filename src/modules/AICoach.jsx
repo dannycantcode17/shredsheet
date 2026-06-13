@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react'
 import { useStore } from '../state/store.jsx'
-import { PageHead, Card, Pill } from '../components/ui.jsx'
+import { PageHead, Card, Pill, EmptyState } from '../components/ui.jsx'
 import { buildCoachContext } from '../lib/engine.js'
 import { askCoach } from '../lib/ai.js'
 
@@ -29,19 +29,23 @@ export default function AICoach() {
 
   return (
     <>
-      <PageHead eyebrow="Insights · 8" title="AI Coach" sub="Your live coach reads every number in the sheet. Ask anything, or fire off a full analysis." />
+      <PageHead eyebrow="Insights" title="AI Coach" sub="Your live coach reads every number in the sheet. Ask anything, or fire off a full analysis." />
       <div className="row-between" style={{ marginBottom: 14 }}>
-        <div className="btn-row">
-          <button className="btn primary" onClick={() => send('Analyse my data: what is working, what is not, and the single most important change I should make this week?')} disabled={busy}>⚡ Analyse my data</button>
-          <button className="btn" onClick={() => send('In two lines, am I on track for my goal? Be blunt.')} disabled={busy}>Am I on track?</button>
+        <div className="chips">
+          <button className="chip" onClick={() => send('Analyse my data: what is working, what is not, and the single most important change I should make this week?')} disabled={busy}>⚡ Analyse my data</button>
+          <button className="chip" onClick={() => send('In two lines, am I on track for my goal? Be blunt.')} disabled={busy}>Am I on track?</button>
+          <button className="chip" onClick={() => send('What should I focus on in my next workout?')} disabled={busy}>Next workout?</button>
         </div>
         <button className="btn ghost" onClick={copyPrompt}>Copy full prompt</button>
       </div>
       <Card>
         <div className="chat-log" ref={logRef}>
-          {!messages.length && <div className="msg sys">The coach already has your full context loaded. Try a question, or hit “Analyse my data”.</div>}
+          {!messages.length && (
+            <EmptyState card={false} icon="chat" title="Your coach is ready"
+              sub="It already has your full context loaded — every input, log and target. Ask anything, or tap a quick prompt above." />
+          )}
           {messages.map((m, i) => <div key={i} className={`msg ${m.role === 'user' ? 'user' : 'ai'}`}>{m.content}</div>)}
-          {busy && <div className="msg ai faint">Thinking…</div>}
+          {busy && <div className="msg ai"><span className="typing" aria-label="Coach is thinking"><span /><span /><span /></span></div>}
         </div>
         <div className="divider" />
         <div style={{ display: 'flex', gap: 10 }}>
