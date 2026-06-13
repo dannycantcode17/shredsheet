@@ -114,7 +114,7 @@ function Sign({ children }) {
   return <div className="cfg-signpost"><span className="ico">→</span><span>{children}</span></div>
 }
 
-// tappable choice chips — friendlier than a dropdown on a phone
+// tappable choice cards — radio-style row layout
 function ChoiceChips({ k, options, columns }) {
   const { draft, update } = useDraft()
   return (
@@ -126,8 +126,11 @@ function ChoiceChips({ k, options, columns }) {
             className={`cfg-choice ${selected ? 'selected' : ''}`}
             aria-pressed={selected}
             onClick={() => update({ [k]: o.value })}>
-            <span className="c-title">{o.title}</span>
-            {o.sub && <span className="c-sub">{o.sub}</span>}
+            <span className="cfg-choice-text">
+              <span className="c-title">{o.title}</span>
+              {o.sub && <span className="c-sub">{o.sub}</span>}
+            </span>
+            <span className="cfg-radio" aria-hidden="true" />
           </button>
         )
       })}
@@ -228,8 +231,11 @@ function MultiChips({ k, options, columns }) {
         return (
           <button key={o.value} type="button" className={`cfg-choice ${on ? 'selected' : ''}`}
             aria-pressed={on} onClick={() => toggle(o.value)}>
-            <span className="c-title">{o.title}</span>
-            {o.sub && <span className="c-sub">{o.sub}</span>}
+            <span className="cfg-choice-text">
+              <span className="c-title">{o.title}</span>
+              {o.sub && <span className="c-sub">{o.sub}</span>}
+            </span>
+            <span className="cfg-check" aria-hidden="true" />
           </button>
         )
       })}
@@ -661,22 +667,26 @@ export default function Configurator() {
     <DraftCtx.Provider value={{ draft, update }}>
       <div className="cfg-root app-root">
         <div className="cfg-shell">
-          <div className="cfg-progress" aria-hidden="true">
-            <div className="fill" style={{ width: pct }} />
+          <div className="cfg-topbar">
+            {step > 0
+              ? <button className="cfg-back" onClick={back} aria-label="Go back">‹</button>
+              : <span className="cfg-back-ph" />}
+            <div className="cfg-step-info">
+              <span className="cfg-eyebrow">{steps[step].eyebrow}</span>
+              <div className="cfg-progress" aria-hidden="true">
+                <div className="fill" style={{ width: pct }} />
+              </div>
+            </div>
           </div>
 
           {/* TEMP JOKE: bright-pink the sex step when Female is picked. Remove anytime. */}
           <div className={`cfg-card ${steps[step].requires === 'sex' && draft.sex === 'Female' ? 'joke-pink' : ''}`} key={step}>
-            <div className="cfg-eyebrow">{steps[step].eyebrow}</div>
             {steps[step].render()}
           </div>
 
-          <div className="cfg-nav">
-            {step > 0 && <button className="btn back" onClick={back}>←</button>}
-            <button className="btn primary" onClick={next} disabled={!stepOk}>
-              {step === 0 ? 'Build my system' : last ? 'Build my plan' : 'Continue'}
-            </button>
-          </div>
+          <button className="cfg-cta" onClick={next} disabled={!stepOk}>
+            {step === 0 ? 'Get started' : last ? 'Build my plan' : 'Next'}
+          </button>
         </div>
       </div>
     </DraftCtx.Provider>
