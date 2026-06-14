@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo, useEffect, createContext, useContext } from 'react'
 import { useStore } from '../state/store.jsx'
-import { INTENSITIES } from '../lib/defaults.js'
+import { INTENSITIES, DEFAULT_INPUTS, generatePlan } from '../lib/defaults.js'
 import { GOAL_LABEL, GOAL_SUB } from '../components/ui.jsx'
 
 // ============================================================
@@ -60,7 +60,7 @@ function Wheel({ value, onChange, min, max, step = 1, unit }) {
     if (!el || selIdx < 0) return
     if (Date.now() - lastScroll.current < 200) return
     const target = selIdx * CELL
-    if (Math.abs(el.scrollLeft - target) > 2) el.scrollLeft = target
+    if (Math.abs(el.scrollTop - target) > 2) el.scrollTop = target
   }, [selIdx])
 
   const onScroll = () => {
@@ -69,12 +69,12 @@ function Wheel({ value, onChange, min, max, step = 1, unit }) {
     raf.current = requestAnimationFrame(() => {
       const el = ref.current
       if (!el) return
-      const i = Math.min(items.length - 1, Math.max(0, Math.round(el.scrollLeft / CELL)))
+      const i = Math.min(items.length - 1, Math.max(0, Math.round(el.scrollTop / CELL)))
       const v = String(items[i])
       if (v !== String(value ?? '')) onChange(v)
     })
   }
-  const go = (i) => ref.current?.scrollTo({ left: Math.min(items.length - 1, Math.max(0, i)) * CELL, behavior: 'smooth' })
+  const go = (i) => ref.current?.scrollTo({ top: Math.min(items.length - 1, Math.max(0, i)) * CELL, behavior: 'smooth' })
 
   return (
     <div className="wheel">
@@ -85,8 +85,8 @@ function Wheel({ value, onChange, min, max, step = 1, unit }) {
         aria-valuenow={Number.isFinite(parseFloat(value)) ? parseFloat(value) : undefined}
         aria-valuetext={unit ? `${value} ${unit}` : String(value)}
         onKeyDown={(e) => {
-          if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); go((selIdx < 0 ? 0 : selIdx) + 1) }
-          if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); go((selIdx < 0 ? 0 : selIdx) - 1) }
+          if (e.key === 'ArrowDown') { e.preventDefault(); go((selIdx < 0 ? 0 : selIdx) + 1) }
+          if (e.key === 'ArrowUp') { e.preventDefault(); go((selIdx < 0 ? 0 : selIdx) - 1) }
         }}
       >
         {items.map((v, i) => (
@@ -417,7 +417,7 @@ function VibePicker() {
 }
 
 export default function Configurator() {
-  const { setInputs, setOnboarded, setView } = useStore()
+  const { setInputs, setPlan, setOnboarded, setView } = useStore()
   const [step, setStep] = useState(0)
   const [draft, setDraft] = useState({}) // starts blank — nothing pre-selected
   const update = (patch) => setDraft(d => ({ ...d, ...patch }))
@@ -654,6 +654,7 @@ export default function Configurator() {
       Object.entries(draft).filter(([, v]) => v !== '' && v != null)
     )
     setInputs(filled)
+    setPlan(generatePlan({ ...DEFAULT_INPUTS, ...filled }))
     setOnboarded(true)
     setView('plan')
   }
