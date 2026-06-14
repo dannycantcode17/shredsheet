@@ -118,3 +118,115 @@ export const DEFAULT_PLAN = [
   },
   blankDay(), blankDay(), blankDay(), blankDay(),
 ]
+
+// ============================================================
+// PLAN GENERATOR — builds a starter plan from onboarding inputs.
+// Respects equipment choices, veto list, experience, and session
+// count. Used at the end of the Configurator; users can refine.
+// ============================================================
+
+// [name, category, isCompound, equipmentTags[]]
+const EX_DB = [
+  // PUSH — compound
+  ['Bench Press',             'push', true,  ['Barbell', 'Full gym']],
+  ['Incline Bench Press',     'push', true,  ['Barbell', 'Full gym']],
+  ['Overhead Press',          'push', true,  ['Barbell', 'Full gym']],
+  ['Dumbbell Bench Press',    'push', true,  ['Dumbbells', 'Full gym']],
+  ['Incline Dumbbell Press',  'push', true,  ['Dumbbells', 'Full gym']],
+  ['Overhead Dumbbell Press', 'push', true,  ['Dumbbells', 'Full gym']],
+  ['Chest Press Machine',     'push', true,  ['Machines & cables', 'Full gym']],
+  ['Shoulder Press Machine',  'push', true,  ['Machines & cables', 'Full gym']],
+  ['Push-up',                 'push', true,  ['Bodyweight only', 'Full gym']],
+  ['Dip',                     'push', true,  ['Bodyweight only', 'Full gym']],
+  ['Kettlebell Press',        'push', true,  ['Kettlebells']],
+  ['Resistance Band Press',   'push', true,  ['Bands']],
+  // PUSH — isolation
+  ['Lateral Raise',           'push', false, ['Dumbbells', 'Machines & cables', 'Full gym']],
+  ['Tricep Pushdown',         'push', false, ['Machines & cables', 'Full gym']],
+  ['Cable Fly',               'push', false, ['Machines & cables', 'Full gym']],
+  ['Overhead Tricep Ext.',    'push', false, ['Dumbbells', 'Full gym']],
+  ['Skullcrusher',            'push', false, ['Barbell', 'Full gym']],
+  ['Tricep Dip',              'push', false, ['Bodyweight only', 'Full gym']],
+  ['Diamond Push-up',         'push', false, ['Bodyweight only']],
+  ['Band Lateral Raise',      'push', false, ['Bands']],
+  // PULL — compound
+  ['Deadlift',                'pull', true,  ['Barbell', 'Full gym']],
+  ['Barbell Row',             'pull', true,  ['Barbell', 'Full gym']],
+  ['Romanian Deadlift',       'pull', true,  ['Barbell', 'Full gym']],
+  ['Dumbbell Row',            'pull', true,  ['Dumbbells', 'Full gym']],
+  ['Lat Pulldown',            'pull', true,  ['Machines & cables', 'Full gym']],
+  ['Seated Cable Row',        'pull', true,  ['Machines & cables', 'Full gym']],
+  ['Pull-up',                 'pull', true,  ['Bodyweight only', 'Full gym']],
+  ['Chin-up',                 'pull', true,  ['Bodyweight only', 'Full gym']],
+  ['Kettlebell Row',          'pull', true,  ['Kettlebells']],
+  ['Band Row',                'pull', true,  ['Bands']],
+  // PULL — isolation
+  ['Barbell Curl',            'pull', false, ['Barbell', 'Full gym']],
+  ['Dumbbell Curl',           'pull', false, ['Dumbbells', 'Full gym']],
+  ['Hammer Curl',             'pull', false, ['Dumbbells', 'Full gym']],
+  ['Face Pulls',              'pull', false, ['Machines & cables', 'Full gym']],
+  ['Cable Curl',              'pull', false, ['Machines & cables', 'Full gym']],
+  ['Rear Delt Fly',           'pull', false, ['Dumbbells', 'Full gym']],
+  ['Band Curl',               'pull', false, ['Bands']],
+  // LEGS — compound
+  ['Back Squat',              'legs', true,  ['Barbell', 'Full gym']],
+  ['Front Squat',             'legs', true,  ['Barbell', 'Full gym']],
+  ['Dumbbell RDL',            'legs', true,  ['Dumbbells', 'Full gym']],
+  ['Bulgarian Split Squat',   'legs', true,  ['Dumbbells', 'Bodyweight only', 'Full gym']],
+  ['Walking Lunge',           'legs', true,  ['Dumbbells', 'Bodyweight only', 'Full gym']],
+  ['Goblet Squat',            'legs', true,  ['Dumbbells', 'Kettlebells', 'Full gym']],
+  ['Leg Press',               'legs', true,  ['Machines & cables', 'Full gym']],
+  ['Nordic Curl',             'legs', true,  ['Bodyweight only', 'Full gym']],
+  ['Step Up',                 'legs', true,  ['Bodyweight only']],
+  ['Kettlebell Swing',        'legs', true,  ['Kettlebells']],
+  // LEGS — isolation
+  ['Leg Extension',           'legs', false, ['Machines & cables', 'Full gym']],
+  ['Leg Curl',                'legs', false, ['Machines & cables', 'Full gym']],
+  ['Calf Raise',              'legs', false, ['Dumbbells', 'Bodyweight only', 'Full gym']],
+  ['Glute Bridge',            'legs', false, ['Bodyweight only', 'Dumbbells', 'Full gym']],
+  ['Hip Thrust',              'legs', false, ['Barbell', 'Full gym']],
+  ['Kettlebell Deadlift',     'legs', false, ['Kettlebells']],
+]
+
+export function generatePlan(inputs) {
+  const equipment = inputs.equipment?.length ? inputs.equipment : ['Full gym']
+  const veto = inputs.veto || []
+  const sessions = Math.max(1, Math.min(6, parseInt(inputs.gymSessionsPerWeek) || 3))
+  const exp = inputs.experience || 'Intermediate'
+  const cSets = exp === 'Beginner' ? 3 : exp === 'Advanced' ? 5 : 4
+  const iSets = exp === 'Beginner' ? 2 : 3
+  const blank = () => ({ name: '', compound: false, sets: '', goalWeight: '', goalReps: '' })
+  const pad = exs => [...exs, ...Array.from({ length: Math.max(0, 10 - exs.length) }, blank)].slice(0, 10)
+
+  const pick = (category, isCompound, n) => {
+    const result = []
+    const seen = new Set()
+    for (const [name, cat, comp, tags] of EX_DB) {
+      if (cat !== category || comp !== isCompound) continue
+      if (!tags.some(t => equipment.includes(t))) continue
+      if (veto.includes(name) || seen.has(name)) continue
+      seen.add(name)
+      result.push({ name, compound: isCompound, sets: isCompound ? cSets : iSets, goalWeight: '', goalReps: '' })
+      if (result.length >= n) break
+    }
+    return result
+  }
+
+  const push  = () => ({ name: 'PUSH',      exercises: pad([...pick('push', true, 3), ...pick('push', false, 2)]) })
+  const pull  = () => ({ name: 'PULL',      exercises: pad([...pick('pull', true, 3), ...pick('pull', false, 2)]) })
+  const legs  = () => ({ name: 'LEGS',      exercises: pad([...pick('legs', true, 3), ...pick('legs', false, 2)]) })
+  const upper = () => ({ name: 'UPPER',     exercises: pad([...pick('push', true, 2), ...pick('pull', true, 2), ...pick('push', false, 1), ...pick('pull', false, 1)]) })
+  const lower = () => ({ name: 'LOWER',     exercises: pad([...pick('legs', true, 3), ...pick('legs', false, 2)]) })
+  const fb    = (lbl) => ({ name: lbl,      exercises: pad([...pick('push', true, 1), ...pick('pull', true, 1), ...pick('legs', true, 1), ...pick('push', false, 1), ...pick('pull', false, 1)]) })
+
+  let named
+  if      (sessions === 1) named = [fb('FULL BODY')]
+  else if (sessions === 2) named = [fb('FULL BODY A'), fb('FULL BODY B')]
+  else if (sessions === 3) named = [push(), pull(), legs()]
+  else if (sessions === 4) named = [push(), pull(), legs(), upper()]
+  else if (sessions === 5) named = [push(), pull(), legs(), upper(), lower()]
+  else                     named = [push(), pull(), legs(), push(), pull(), legs()]
+
+  while (named.length < 7) named.push(blankDay())
+  return named
+}
